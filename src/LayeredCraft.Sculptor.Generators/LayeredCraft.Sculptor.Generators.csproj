@@ -11,8 +11,19 @@
         <PackageId>Sculptor</PackageId>
         <AssemblyName>$(PackageId)</AssemblyName>
         <RootNamespace>$(PackageId)</RootNamespace>
+        <Title>$(PackageId)</Title>
+        <Description>Sculptor is a .NET incremental source generator that enables compile-time decorator registration using C# 11+ interceptors. Zero runtime overhead, type-safe decorator chains, and full open generic support for .NET dependency injection.</Description>
+        <PackageTags>source-generator;roslyn;dependency-injection;decorator-pattern;interceptors;compile-time;aop;di;ioc;dotnet</PackageTags>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="..\..\icon.png" Pack="true" PackagePath="" Visible="False" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="False" />
+    </ItemGroup>
+    
     <ItemGroup>
         <!-- Keep Roslyn deps private so they don't leak to consumers -->
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all"/>

@@ -9,6 +9,9 @@
   <Folder Name="/samples/">
     <Project Path="samples\Sculptor.Sample\Sculptor.Sample.csproj" Type="Classic C#" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/LayeredCraft.Sculptor.Generators/LayeredCraft.Sculptor.Generators.csproj" />
     <Project Path="src\LayeredCraft.Sculptor.Attributes\LayeredCraft.Sculptor.Attributes.csproj" Type="Classic C#" />
