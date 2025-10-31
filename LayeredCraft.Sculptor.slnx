@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/git/">
+    <File Path=".gitignore" />
+    <File Path=".gitattributes" />
+    <File Path=".github\dependabot.yml" />
+    <File Path=".github\workflows\build.yaml" />
+    <File Path=".github\workflows\pr-build.yaml" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples\Sculptor.Sample\Sculptor.Sample.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/LayeredCraft.Sculptor.Generators/LayeredCraft.Sculptor.Generators.csproj" />
+    <Project Path="src\LayeredCraft.Sculptor.Attributes\LayeredCraft.Sculptor.Attributes.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test\LayeredCraft.Sculptor.Genrator.Tests\LayeredCraft.Sculptor.Generator.Tests.csproj" Type="Classic C#" />
+  </Folder>
+</Solution>
