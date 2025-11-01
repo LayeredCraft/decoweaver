@@ -12,8 +12,8 @@ namespace Sculptor.Emit;
 /// <summary>Emits the interceptor source for Sculptor's open-generic decoration rewrite.</summary>
 internal static class InterceptorEmitter
 {
-    public static string EmitOpenGenericInterceptors(
-        EquatableArray<OpenGenericRegistration> registrations,
+    public static string EmitClosedGenericInterceptors(
+        EquatableArray<ClosedGenericRegistration> registrations,
         Dictionary<TypeDefId, EquatableArray<TypeDefId>> decoratorsByImplementation)
     {
         var sb = new StringBuilder(16_384);
@@ -32,6 +32,7 @@ internal static class InterceptorEmitter
         sb.AppendLine("    using System.Runtime.CompilerServices;");
         sb.AppendLine("    using Microsoft.Extensions.DependencyInjection;");
         sb.AppendLine();
+
         sb.AppendLine("    file static class SculptorInterceptors");
         sb.AppendLine("    {");
 
@@ -40,15 +41,15 @@ internal static class InterceptorEmitter
             .GroupBy(r => r.Lifetime)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        // Emit only the methods that are actually used
-        if (byLifetime.ContainsKey("AddTransient"))
-            EmitAddOverloadWithAttributes(sb, "AddTransient", byLifetime["AddTransient"], decoratorsByImplementation);
-
-        if (byLifetime.ContainsKey("AddScoped"))
-            EmitAddOverloadWithAttributes(sb, "AddScoped", byLifetime["AddScoped"], decoratorsByImplementation);
-
-        if (byLifetime.ContainsKey("AddSingleton"))
-            EmitAddOverloadWithAttributes(sb, "AddSingleton", byLifetime["AddSingleton"], decoratorsByImplementation);
+        // Emit one interceptor method per registration
+        var methodIndex = 0;
+        foreach (var (lifetime, regs) in byLifetime)
+        {
+            foreach (var reg in regs)
+            {
+                EmitSingleInterceptor(sb, lifetime, reg, methodIndex++, decoratorsByImplementation);
+            }
+        }
 
         EmitHelpers(sb);
 
@@ -69,53 +70,116 @@ internal static class InterceptorEmitter
         sb.AppendLine();
     }
 
+    private static void EmitSingleInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        Dictionary<TypeDefId, EquatableArray<TypeDefId>> byImpl)
+    {
+        // Use the pre-generated FQNs for closed types from the registration
+        var serviceFqn = reg.ServiceFqn;
+        var implFqn = reg.ImplFqn;
+
+        byImpl.TryGetValue(reg.ImplDef, out var decos);
+        var decorators = decos.Count == 0 ? Array.Empty<string>() : decos.Select(ToFqn).ToArray();
+
+        // Emit the [InterceptsLocation] attribute
+        sb.AppendLine($"        [InterceptsLocation(version: 1, data: \"{Escape(reg.InterceptsData)}\")]");
+
+        // Emit the method - MUST be generic to match the original signature
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}, {implFqn}&gt;(IServiceCollection)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService, TImplementation>(this IServiceCollection services)");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("            where TImplementation : class, TService");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Register the undecorated implementation as a keyed service");
+            sb.AppendLine($"            var key = DecoratorKeys.For(typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine($"            services.{AddKeyed(methodName)}<{serviceFqn}, {implFqn}>(key);");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory that applies decorators");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(sp =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(key)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, just register normally");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}, {implFqn}>(services);");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
     private static void EmitAddOverloadWithAttributes(
         StringBuilder sb,
         string methodName,
-        List<OpenGenericRegistration> registrations,
+        List<ClosedGenericRegistration> registrations,
         Dictionary<TypeDefId, EquatableArray<TypeDefId>> byImpl)
     {
         // Emit all [InterceptsLocation] attributes for this lifetime
         foreach (var reg in registrations)
             sb.AppendLine($"        [InterceptsLocation(version: 1, data: \"{Escape(reg.InterceptsData)}\")]");
 
-        // Emit the method
-        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}(IServiceCollection, Type, Type)</summary>");
-        sb.AppendLine($"        internal static IServiceCollection {methodName}(IServiceCollection services, Type serviceType, Type implementationType)");
+        // Emit the method - generic signature to intercept AddScoped<TService, TImplementation>()
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;TService, TImplementation&gt;(IServiceCollection)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}<TService, TImplementation>(this IServiceCollection services)");
+        sb.AppendLine($"            where TService : class");
+        sb.AppendLine($"            where TImplementation : class, TService");
         sb.AppendLine("        {");
-        sb.AppendLine("            // Rewrite only for known open-generic registrations we discovered at compile time.");
-        sb.AppendLine("            // Fallback to original method if we don't have a plan for this (service, impl) pair.");
+        sb.AppendLine("            // Check if this implementation has decorators we need to apply");
         sb.AppendLine();
 
         foreach (var reg in registrations)
         {
+            var serviceFqn = ToFqn(reg.ServiceDef);
             var implFqn = ToFqn(reg.ImplDef);
 
             byImpl.TryGetValue(reg.ImplDef, out var decos);
             var decorators = decos.Count == 0 ? Array.Empty<string>() : decos.Select(ToFqn).ToArray();
 
-            sb.AppendLine($"            if (implementationType == typeof({implFqn}))");
+            sb.AppendLine($"            if (typeof(TService) == typeof({serviceFqn}) && typeof(TImplementation) == typeof({implFqn}))");
             sb.AppendLine("            {");
-            sb.AppendLine("                var key = DecoratorKeys.For(serviceType, implementationType);");
-            sb.AppendLine($"                services.{AddKeyed(methodName)}(serviceType, key, implementationType);");
-            sb.AppendLine($"                services.{methodName}(serviceType, sp =>");
-            sb.AppendLine("                {");
-            sb.AppendLine("                    var current = sp.GetRequiredKeyedService(serviceType, key)!;");
+
             if (decorators.Length > 0)
             {
-                sb.AppendLine("                    // Compose decorators (outermost last)");
+                sb.AppendLine("                // Register the undecorated implementation as a keyed service");
+                sb.AppendLine("                var key = DecoratorKeys.For(typeof(TService), typeof(TImplementation));");
+                sb.AppendLine($"                services.{AddKeyed(methodName)}<TService, TImplementation>(key);");
+                sb.AppendLine();
+                sb.AppendLine("                // Register factory that applies decorators");
+                sb.AppendLine($"                services.{methodName}<TService>(sp =>");
+                sb.AppendLine("                {");
+                sb.AppendLine("                    var current = (TService)sp.GetRequiredKeyedService<TService>(key)!;");
+                sb.AppendLine("                    // Compose decorators (innermost to outermost)");
                 foreach (var deco in decorators)
-                    sb.AppendLine($"                    current = DecoratorFactory.Create(sp, serviceType, typeof({deco}), current);");
+                    sb.AppendLine($"                    current = (TService)DecoratorFactory.Create(sp, typeof(TService), typeof({deco}), current);");
+                sb.AppendLine("                    return current;");
+                sb.AppendLine("                });");
             }
-            sb.AppendLine("                    return current!;");
-            sb.AppendLine("                });");
+            else
+            {
+                sb.AppendLine("                // No decorators, just register normally");
+                sb.AppendLine($"                Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<TService, TImplementation>(services);");
+            }
+
             sb.AppendLine("                return services;");
             sb.AppendLine("            }");
             sb.AppendLine();
         }
 
         sb.AppendLine("            // Fallback to original method for unknown pairs");
-        sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}(services, serviceType, implementationType);");
+        sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<TService, TImplementation>(services);");
         sb.AppendLine("        }");
         sb.AppendLine();
     }
@@ -126,6 +190,22 @@ internal static class InterceptorEmitter
             "AddTransient" => "AddKeyedTransient",
             "AddScoped"    => "AddKeyedScoped",
             _              => "AddKeyedSingleton"
+        };
+
+    private static string GetServiceDescriptorMethod(string lifetimeMethod) =>
+        lifetimeMethod switch
+        {
+            "AddTransient" => "Transient",
+            "AddScoped"    => "Scoped",
+            _              => "Singleton"
+        };
+
+    private static string GetServiceLifetime(string lifetimeMethod) =>
+        lifetimeMethod switch
+        {
+            "AddTransient" => "Transient",
+            "AddScoped"    => "Scoped",
+            _              => "Singleton"
         };
 
     private static void EmitHelpers(StringBuilder sb)
@@ -161,8 +241,8 @@ internal static class InterceptorEmitter
 
     private static string ToFqn(TypeDefId t)
     {
-        var ns = t.ContainingNamespaces is { Length: > 0 } ? string.Join(".", t.ContainingNamespaces) : null;
-        var nest = t.ContainingTypes is { Length: > 0 } ? string.Join("+", t.ContainingTypes) : null;
+        var ns = t.ContainingNamespaces is { Count: > 0 } ? string.Join(".", t.ContainingNamespaces) : null;
+        var nest = t.ContainingTypes is { Count: > 0 } ? string.Join("+", t.ContainingTypes) : null;
         var head = ns is null ? "" : ns + ".";
         if (!string.IsNullOrEmpty(nest)) head += nest + ".";
 
@@ -182,6 +262,25 @@ internal static class InterceptorEmitter
 
         // Prepend global:: to avoid namespace conflicts in generated code
         return $"global::{head}{metadataName}";
+    }
+
+    private static string ToFqnClosed(TypeDefId t, string typeParams)
+    {
+        var ns = t.ContainingNamespaces is { Count: > 0 } ? string.Join(".", t.ContainingNamespaces) : null;
+        var nest = t.ContainingTypes is { Count: > 0 } ? string.Join("+", t.ContainingTypes) : null;
+        var head = ns is null ? "" : ns + ".";
+        if (!string.IsNullOrEmpty(nest)) head += nest + ".";
+
+        // Strip backtick notation
+        var metadataName = t.MetadataName;
+        var backtickIndex = metadataName.IndexOf('`');
+        if (backtickIndex >= 0)
+            metadataName = metadataName.Substring(0, backtickIndex);
+
+        // Add type parameters if generic
+        var typeParamsBrackets = !string.IsNullOrEmpty(typeParams) ? $"<{typeParams}>" : string.Empty;
+
+        return $"global::{head}{metadataName}{typeParamsBrackets}";
     }
 
     private static string Escape(string s) =>

@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Sculptor.Model;
+using Sculptor.Util;
 
 namespace Sculptor.Roslyn;
 
@@ -114,8 +115,8 @@ internal static class RoslynAdapters
 
         return new(
             AssemblyName: assembly,
-            ContainingNamespaces: nsParts.ToArray(),
-            ContainingTypes: containingTypes.ToArray(),
+            ContainingNamespaces: new EquatableArray<string>(nsParts.ToArray()),
+            ContainingTypes: new EquatableArray<string>(containingTypes.ToArray()),
             MetadataName: metadataName,
             Arity: arity
         );

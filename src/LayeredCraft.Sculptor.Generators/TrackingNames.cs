@@ -28,13 +28,13 @@ public static class TrackingNames
     public const string Emit_DecorationDebug          = nameof(Emit_DecorationDebug);
 
     // Registration discovery
-    public const string Reg_OpenGeneric_Predicate = nameof(Reg_OpenGeneric_Predicate);
-    public const string Reg_OpenGeneric_Transform = nameof(Reg_OpenGeneric_Transform);
-    public const string Reg_OpenGeneric_Filter   = nameof(Reg_OpenGeneric_Filter);
-    public const string Reg_OpenGeneric_Collect = nameof(Reg_OpenGeneric_Collect);
-    
+    public const string Reg_ClosedGeneric_Predicate = nameof(Reg_ClosedGeneric_Predicate);
+    public const string Reg_ClosedGeneric_Transform = nameof(Reg_ClosedGeneric_Transform);
+    public const string Reg_ClosedGeneric_Filter   = nameof(Reg_ClosedGeneric_Filter);
+    public const string Reg_ClosedGeneric_Collect = nameof(Reg_ClosedGeneric_Collect);
+
     // Emission
-    public const string Emit_OpenGenericInterceptors = nameof(Emit_OpenGenericInterceptors);
+    public const string Emit_ClosedGenericInterceptors = nameof(Emit_ClosedGenericInterceptors);
     
     // Optional gate per-stream
     public const string Gate_Decorations_Generic    = nameof(Gate_Decorations_Generic);

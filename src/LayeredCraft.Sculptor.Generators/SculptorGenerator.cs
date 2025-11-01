@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Sculptor.Emit;          // NEW
+using Sculptor.Emit;
 using Sculptor.Model;
 using Sculptor.Providers;
-using Sculptor.Util;          // NEW (EquatableArray extensions)
+using Sculptor.Util;
 
 namespace Sculptor;
 
@@ -16,8 +16,7 @@ public sealed class SculptorGenerator : IIncrementalGenerator
         // --- Language version gate -----------------------------------------
         var csharpSufficient = context.CompilationProvider
             .Select(static (compilation, _) =>
-                compilation is CSharpCompilation { LanguageVersion: var lv } &&
-                (lv == LanguageVersion.Default || lv >= LanguageVersion.CSharp11))
+                compilation is CSharpCompilation { LanguageVersion: LanguageVersion.Default or >= LanguageVersion.CSharp11 })
             .WithTrackingName(TrackingNames.Settings_LanguageVersionGate);
 
         context.RegisterSourceOutput(
@@ -70,28 +69,28 @@ public sealed class SculptorGenerator : IIncrementalGenerator
             .Combine(nonGenericGated.Collect())
             .WithTrackingName(TrackingNames.Attr_All_Combined);
 
-        // --- NEW: open-generic registration discovery -----------------------
-        var openGenericRegs = context.SyntaxProvider
+        // --- Closed generic registration discovery -----------------------
+        var closedGenericRegs = context.SyntaxProvider
             .CreateSyntaxProvider(
-                OpenGenericRegistrationProvider.Predicate,
-                OpenGenericRegistrationProvider.Transformer)
-            .WithTrackingName(TrackingNames.Reg_OpenGeneric_Transform)
+                ClosedGenericRegistrationProvider.Predicate,
+                ClosedGenericRegistrationProvider.Transformer)
+            .WithTrackingName(TrackingNames.Reg_ClosedGeneric_Transform)
             .Where(static r => r is not null)
-            .WithTrackingName(TrackingNames.Reg_OpenGeneric_Filter)
+            .WithTrackingName(TrackingNames.Reg_ClosedGeneric_Filter)
             .Select(static (r, _) => r!.Value);
 
         // Gate & collect registrations
-        var openGenericRegsCollected = openGenericRegs
+        var closedGenericRegsCollected = closedGenericRegs
             .Combine(csharpSufficient)
             .Where(static pair => pair.Right)
             .Select(static (pair, _) => pair.Left) // back to values
             .Collect()
-            .WithTrackingName(TrackingNames.Reg_OpenGeneric_Collect);
+            .WithTrackingName(TrackingNames.Reg_ClosedGeneric_Collect);
 
-// Emit once we have decorations + registrations
+        // Emit once we have decorations + registrations
         context.RegisterSourceOutput(
-            allDecorations.Combine(openGenericRegsCollected)
-                .WithTrackingName(TrackingNames.Emit_OpenGenericInterceptors),
+            allDecorations.Combine(closedGenericRegsCollected)
+                .WithTrackingName(TrackingNames.Emit_ClosedGenericInterceptors),
             static (spc, pair) =>
             {
                 var (genericDecos, nonGenericDecos) = pair.Left;
@@ -100,34 +99,32 @@ public sealed class SculptorGenerator : IIncrementalGenerator
                 var allDecos = genericDecos.AddRange(nonGenericDecos);
                 var byImpl = BuildDecorationMap(allDecos); // Dictionary<TypeDefId, EquatableArray<TypeDefId>>
 
-                var source = InterceptorEmitter.EmitOpenGenericInterceptors(
+                var source = InterceptorEmitter.EmitClosedGenericInterceptors(
                     registrations: regs.ToEquatableArray(),
                     decoratorsByImplementation: byImpl);
 
-                spc.AddSource("Sculptor.Interceptors.OpenGenerics.g.cs", source);
+                spc.AddSource("Sculptor.Interceptors.ClosedGenerics.g.cs", source);
             });
     }
 
-    private static Dictionary<TypeDefId, Sculptor.Util.EquatableArray<TypeDefId>> BuildDecorationMap(
+    private static Dictionary<TypeDefId, EquatableArray<TypeDefId>> BuildDecorationMap(
         ImmutableArray<DecoratorToIntercept> items)
     {
         var tmp = new Dictionary<TypeDefId, List<(int Order, TypeDefId Deco)>>();
-        foreach (var d in items)
+        foreach (var d in items.Where(d => d.IsInterceptable))
         {
-            if (!d.IsInterceptable) continue;
-
             if (!tmp.TryGetValue(d.ImplementationDef, out var list))
                 tmp[d.ImplementationDef] = list = new();
 
             list.Add((d.Order, d.DecoratorDef));
         }
 
-        var result = new Dictionary<TypeDefId, Sculptor.Util.EquatableArray<TypeDefId>>(tmp.Count);
+        var result = new Dictionary<TypeDefId, EquatableArray<TypeDefId>>(tmp.Count);
         foreach (var (impl, list) in tmp)
         {
             list.Sort(static (a, b) => a.Order.CompareTo(b.Order));
             var unique = list.Select(x => x.Deco).Distinct().ToList();
-            result[impl] = new Sculptor.Util.EquatableArray<TypeDefId>(unique);
+            result[impl] = new EquatableArray<TypeDefId>(unique);
         }
         return result;
     }

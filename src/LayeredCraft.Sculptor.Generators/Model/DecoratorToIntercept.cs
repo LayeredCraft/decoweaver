@@ -1,3 +1,5 @@
+using Sculptor.Util;
+
 namespace Sculptor.Model;
 
 /// <summary>
@@ -23,8 +25,8 @@ public readonly record struct LocationId(string FilePath, int Start, int Length)
 /// </summary>
 public readonly record struct TypeDefId(
     string AssemblyName,
-    string[] ContainingNamespaces, // outermost -> innermost
-    string[] ContainingTypes,      // for nested types, outermost -> innermost (metadata names)
+    EquatableArray<string> ContainingNamespaces, // outermost -> innermost
+    EquatableArray<string> ContainingTypes,      // for nested types, outermost -> innermost (metadata names)
     string MetadataName,           // e.g., "IRepository`1"
     int Arity                      // 0 for non-generic; matches `N in `N
 );

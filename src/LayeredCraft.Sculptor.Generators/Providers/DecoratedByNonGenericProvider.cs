@@ -24,7 +24,7 @@ internal static class DecoratedByNonGenericProvider
 
         // Order can be either ctor arg #1 (int) or named arg "Order"
         var order = GetIntNamedArg(attr, "Order", defaultValue: 0);
-        if (order == 0 && attr.ConstructorArguments.Length >= 2 && attr.ConstructorArguments[1].Value is int ctorOrder)
+        if (order == 0 && attr.ConstructorArguments is [_, { Value: int ctorOrder } _, ..])
             order = ctorOrder;
 
         // First ctor arg is the Type

@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 
 namespace Sculptor.Util;
 
 // Value-based equality wrapper for incremental caching & dictionary keys
-internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnumerable<T>
+[CollectionBuilder(typeof(EquatableArrayBuilder), nameof(EquatableArrayBuilder.Create))]
+public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnumerable<T>
     where T : IEquatable<T>
 {
     private readonly T[]? _array;
@@ -44,4 +46,9 @@ internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnu
 
     public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right) => left.Equals(right);
     public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right) => !left.Equals(right);
+}
+internal static class EquatableArrayBuilder
+{
+    public static EquatableArray<T> Create<T>(ReadOnlySpan<T> items) where T : IEquatable<T>
+        => new EquatableArray<T>(items.ToArray());
 }

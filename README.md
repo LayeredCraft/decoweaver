@@ -15,15 +15,15 @@ Sculptor is a .NET incremental source generator that brings **compile-time decor
 Unlike runtime approaches (like Scrutor), Sculptor analyzes your code during compilation and generates optimized interceptor code that rewrites DI registrations. This results in:
 - **Zero runtime overhead** - No reflection or assembly scanning at startup
 - **Type-safe decorator chains** - Catches configuration errors at compile time
-- **Open generic support** - Decorate `IRepository<T>` implementations seamlessly
+- **Closed generic support** - Decorate specific instantiations like `IRepository<Customer>` and `IRepository<Order>`
 - **Clear service composition** - Generated code is inspectable and debuggable
 
 ## Key Features
 
-- **Attribute-driven decoration**: Simply mark your implementations with `[DecoratedBy<TDecorator>]`
-- **Open generic decorators**: Support for `IRepository<T>`, `ICommand<T>`, and other generic patterns
+- **Attribute-driven decoration**: Simply mark your implementations with `[DecoratedBy<TDecorator>]` or `[DecoratedBy(typeof(...))]`
+- **Closed generic registrations**: Support for `IRepository<Customer>`, `ICommand<CreateOrder>`, and other closed generic patterns
+- **Open generic decorators**: Decorator classes can be open generics like `CachingRepository<>` that are closed at runtime
 - **Ordered decorator chains**: Control decorator application order with the `Order` property
-- **Assembly-level decoration**: Apply decorators to all implementations of a service with `[DecorateService]`
 - **Keyed services**: Leverages .NET 8+ keyed services to prevent circular dependencies
 - **Incremental generation**: Fast rebuilds with Roslyn's incremental generator infrastructure
 
@@ -83,27 +83,29 @@ public class CachingRepository<T> : IRepository<T>
 }
 ```
 
-### 2. Register as usual
+### 2. Register with closed generics
 
 ```csharp
 var services = new ServiceCollection();
 
-// Standard open generic registration
-services.AddScoped(typeof(IRepository<>), typeof(DynamoDbRepository<>));
+// Register closed generic types (specific instantiations)
+services.AddScoped<IRepository<Customer>, DynamoDbRepository<Customer>>();
+services.AddScoped<IRepository<Order>, DynamoDbRepository<Order>>();
 
 var provider = services.BuildServiceProvider();
 ```
 
 ### 3. Magic happens at compile time
 
-Sculptor generates an interceptor that rewrites the `AddScoped` call to:
-1. Register `DynamoDbRepository<>` as a keyed service
-2. Register a factory that resolves the keyed service and wraps it with `CachingRepository<>`
+Sculptor generates an interceptor for each registration that:
+1. Registers the undecorated implementation (e.g., `DynamoDbRepository<Customer>`) as a keyed service
+2. Registers a factory that resolves the keyed service and wraps it with decorators
+3. Closes open generic decorators at runtime using the service type's generic arguments
 
-When you resolve `IRepository<User>`, you automatically get:
+When you resolve `IRepository<Customer>`, you automatically get:
 ```
-CachingRepository<User>
-  └─ DynamoDbRepository<User>
+CachingRepository<Customer>
+  └─ DynamoDbRepository<Customer>
 ```
 
 ## Usage
@@ -120,9 +122,9 @@ public class UserService : IUserService
 }
 ```
 
-### Open Generic Decorators
+### Open Generic Decorators with Closed Registrations
 
-Use `typeof()` for open generic decorators:
+Use `typeof()` for open generic decorators. The decorator can be an open generic (`CachingRepository<>`) even though you register closed types:
 
 ```csharp
 [DecoratedBy(typeof(CachingRepository<>))]
@@ -131,7 +133,13 @@ public class SqlRepository<T> : IRepository<T>
 {
     // Implementation
 }
+
+// Register with closed types
+services.AddScoped<IRepository<Customer>, SqlRepository<Customer>>();
+services.AddScoped<IRepository<Order>, SqlRepository<Order>>();
 ```
+
+The decorator will be closed at runtime to match the service type (e.g., `CachingRepository<Customer>`).
 
 The `order` parameter controls application order (lower numbers are applied first/innermost).
 
@@ -157,21 +165,22 @@ RetryRepository<T>          (outermost - order: 2)
           └─ HttpRepository<T> (implementation)
 ```
 
-### Assembly-Level Decoration
+### Important: Closed Generic Registration Required
 
-Apply a decorator to all implementations of a service across an assembly:
+**Sculptor currently only supports closed generic registrations.** This means you must register specific type instantiations:
 
+✅ **Supported:**
 ```csharp
-[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>), order: 100)]
-
-namespace MyApp;
-
-// This automatically gets MetricsRepository<> applied
-public class UserRepository : IRepository<User> { }
-
-// This too
-public class ProductRepository : IRepository<Product> { }
+services.AddScoped<IRepository<Customer>, DynamoDbRepository<Customer>>();
+services.AddScoped<IRepository<Order>, DynamoDbRepository<Order>>();
 ```
+
+❌ **Not Supported:**
+```csharp
+services.AddScoped(typeof(IRepository<>), typeof(DynamoDbRepository<>));
+```
+
+The decorator classes themselves can be open generics (like `CachingRepository<>`), and they will be closed at runtime to match the registered service type.
 
 ### Controlling Decorator Order
 
@@ -190,53 +199,54 @@ public class OrderService : IOrderService { }
 
 1. **Discovery**: During compilation, Sculptor scans for:
    - Classes marked with `[DecoratedBy<T>]` or `[DecoratedBy(typeof(...))]`
-   - Assembly-level `[DecorateService]` attributes
-   - DI registration calls like `AddScoped(typeof(IRepo<>), typeof(Impl<>))`
+   - DI registration calls like `AddScoped<IRepository<Customer>, DynamoDbRepository<Customer>>()`
 
-2. **Code Generation**: Generates an interceptor file (`Sculptor.Interceptors.OpenGenerics.g.cs`) with:
-   - Methods matching the signature of `ServiceCollectionServiceExtensions.AddScoped/Transient/Singleton`
+2. **Code Generation**: Generates an interceptor file (`Sculptor.Interceptors.ClosedGenerics.g.cs`) with:
+   - One interceptor method per registration call site
+   - Methods with generic signatures (`<TService, TImplementation>`) to match the original DI extension methods
    - `[InterceptsLocation]` attributes that redirect specific call sites to the generated methods
+   - Method bodies use the concrete closed types (not the type parameters)
 
 3. **Runtime Behavior**: The interceptor method:
-   - Registers the undecorated implementation as a keyed service
+   - Registers the undecorated implementation as a keyed service (e.g., `DynamoDbRepository<Customer>`)
    - Registers a factory that resolves the keyed implementation and wraps it with decorators
+   - Open generic decorators are closed at runtime using `MakeGenericType` with the service type's generic arguments
    - Decorators are applied in ascending order by `Order` property
 
 ### Generated Code Example
 
-For the quick start example above, Sculptor generates something like:
+For a registration like `services.AddScoped<IRepository<Customer>, DynamoDbRepository<Customer>>()`, Sculptor generates:
 
 ```csharp
-[InterceptsLocation(version: 1, data: "Program.cs|245|67")]
-internal static IServiceCollection AddScoped(
-    IServiceCollection services,
-    Type serviceType,
-    Type implementationType)
+[InterceptsLocation(version: 1, data: "e38EDFi...")]
+/// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;IRepository<Customer>, DynamoDbRepository<Customer>&gt;</summary>
+internal static IServiceCollection AddScoped_0<TService, TImplementation>(this IServiceCollection services)
+    where TService : class
+    where TImplementation : class, TService
 {
-    if (implementationType == typeof(DynamoDbRepository<>))
+    // Register the undecorated implementation as a keyed service
+    var key = DecoratorKeys.For(typeof(global::App.IRepository<Customer>), typeof(global::App.DynamoDbRepository<Customer>));
+    services.AddKeyedScoped<global::App.IRepository<Customer>, global::App.DynamoDbRepository<Customer>>(key);
+
+    // Register factory that applies decorators
+    services.AddScoped<global::App.IRepository<Customer>>(sp =>
     {
-        var key = $"{serviceType.AssemblyQualifiedName}|{implementationType.AssemblyQualifiedName}";
-
-        // Register undecorated implementation with key
-        services.AddKeyedScoped(serviceType, key, implementationType);
-
-        // Register factory that applies decorators
-        services.AddScoped(serviceType, sp =>
-        {
-            var inner = sp.GetRequiredKeyedService(serviceType, key);
-            var decorated = ActivatorUtilities.CreateInstance(sp,
-                typeof(CachingRepository<>).MakeGenericType(serviceType.GetGenericArguments()),
-                inner);
-            return decorated;
-        });
-
-        return services;
-    }
-
-    // Fallback to original method for unknown types
-    return ServiceCollectionServiceExtensions.AddScoped(services, serviceType, implementationType);
+        var current = (global::App.IRepository<Customer>)sp.GetRequiredKeyedService<global::App.IRepository<Customer>>(key)!;
+        // Compose decorators (innermost to outermost)
+        current = (global::App.IRepository<Customer>)DecoratorFactory.Create(sp,
+            typeof(global::App.IRepository<Customer>),
+            typeof(global::App.CachingRepository<>),
+            current);
+        return current;
+    });
+    return services;
 }
 ```
+
+**Key Points:**
+- The method signature is generic (`<TService, TImplementation>`) to match the intercepted method
+- The method body uses concrete types (`IRepository<Customer>`, `DynamoDbRepository<Customer>`)
+- Open generic decorators (`CachingRepository<>`) are closed at runtime via `DecoratorFactory.Create`
 
 ## Comparison with Scrutor
 
@@ -246,12 +256,13 @@ Sculptor and [Scrutor](https://github.com/khellang/Scrutor) both enable decorato
 |--------|----------|---------|
 | **Execution** | Compile-time code generation | Runtime reflection & scanning |
 | **Performance** | Zero startup overhead | Reflection cost at startup |
-| **Open Generics** | Full support via interceptors | Full support via runtime wrapping |
+| **Registration Style** | Closed generics (`AddScoped<IRepo<T1>, Impl<T1>>()`) | Both open and closed generics |
+| **Decorator Types** | Open generics supported (closed at runtime) | Open generics supported |
 | **Type Safety** | Compile-time validation | Runtime validation |
 | **Inspection** | Generated code is visible | Runtime-only registration |
 | **Requirements** | C# 11+, .NET 8+ | .NET Standard 2.0+ |
 
-Choose Sculptor when you want compile-time safety and zero reflection overhead. Choose Scrutor for broader compatibility or dynamic scenarios.
+Choose Sculptor when you want compile-time safety, zero reflection overhead, and are comfortable with closed generic registrations. Choose Scrutor for broader compatibility, open generic registrations, or dynamic scenarios.
 
 ## Requirements
 
@@ -283,14 +294,6 @@ Non-generic variant supporting open generic types.
 public class SqlRepository<T> : IRepository<T> { }
 ```
 
-### `[assembly: DecorateService(Type serviceType, Type decoratorType, int order = 0)]`
-
-Assembly-level decoration for all implementations of a service.
-
-```csharp
-[assembly: DecorateService(typeof(ICommand<>), typeof(ValidationCommand<>))]
-```
-
 ### Properties
 
 - **`Order`** (int): Controls decorator nesting order. Lower values are applied first (innermost). Default: 0.
@@ -312,8 +315,9 @@ Interceptors are currently experimental. You may see compiler warnings. These ca
 
 1. Verify you're using C# 11+ (`<LangVersion>11</LangVersion>`)
 2. Ensure the generator package is referenced: `<PackageReference Include="Sculptor" />`
-3. Check that your registration uses `AddScoped/Transient/Singleton(typeof(...), typeof(...))`
+3. **Check that your registration uses closed generics**: `AddScoped<IRepo<Customer>, Impl<Customer>>()`, not `AddScoped(typeof(IRepo<>), typeof(Impl<>))`
 4. Look for generated files in `obj/Debug/[target]/generated/Sculptor/`
+5. Verify the `[DecoratedBy]` attribute is on the implementation class (e.g., `DynamoDbRepository<T>`)
 
 ### Keyed services not available
 

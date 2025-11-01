@@ -27,7 +27,7 @@ internal static class DecoratedByGenericProvider
         var order = GetIntNamedArg(attr, "Order", defaultValue: 0);
 
         // Extract TDecorator from DecoratedByAttribute<TDecorator>
-        if (attr.AttributeClass is not INamedTypeSymbol { TypeArguments.Length: 1 } g)
+        if (attr.AttributeClass is not { TypeArguments.Length: 1 } g)
             return null;
 
         var decoratorSym = g.TypeArguments[0];
