@@ -15,8 +15,8 @@ public sealed class DecoratedByAttribute<TDecorator> : Attribute
     where TDecorator : class
 {
     /// <summary>Wrapping order; lower numbers are applied first (closest to the implementation).</summary>
-    public int Order { get; init; }
-    public bool IsInterceptable { get; init; } = true;
+    public int Order { get; set; }
+    public bool IsInterceptable { get; set; } = true;
 }
 
 /// <summary>
@@ -28,11 +28,11 @@ public sealed class DecoratedByAttribute<TDecorator> : Attribute
 public sealed class DecoratedByAttribute(Type decoratorType, int order = 0) : Attribute
 {
     /// <summary>The decorator type to apply; must implement the same service contract.</summary>
-    public Type DecoratorType { get; } = decoratorType;
+    public Type DecoratorType { get; set; } = decoratorType;
 
     /// <summary>Wrapping order; lower numbers are applied first.</summary>
-    public int Order { get; } = order;
-    public bool IsInterceptable { get; init; } = true;
+    public int Order { get; set; } = order;
+    public bool IsInterceptable { get; set; } = true;
 }
 
 /// <summary>
@@ -44,8 +44,8 @@ public sealed class DecoratedByAttribute(Type decoratorType, int order = 0) : At
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class DecorateServiceAttribute(Type serviceType, Type decoratorType, int order = 0) : Attribute
 {
-    public Type ServiceType { get; } = serviceType;
-    public Type DecoratorType { get; } = decoratorType;
-    public int Order { get; } = order;
-    public bool IsInterceptable { get; init; } = true;
+    public Type ServiceType { get; set; } = serviceType;
+    public Type DecoratorType { get; set; } = decoratorType;
+    public int Order { get; set; } = order;
+    public bool IsInterceptable { get; set; } = true;
 }

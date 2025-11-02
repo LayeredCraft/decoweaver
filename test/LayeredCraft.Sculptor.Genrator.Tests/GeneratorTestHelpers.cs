@@ -154,7 +154,7 @@ internal sealed class VerifyGlue
     /// Runs <paramref name="generator"/> against one or more input files, checks that generated code compiles,
     /// and snapshots the driver/run result to <c>Snapshots/</c>.
     /// </summary>
-    public static Task VerifySourcesAsync(IIncrementalGenerator generator,
+    public static async Task VerifySourcesAsync(IIncrementalGenerator generator,
         IEnumerable<string> casePaths,
         Dictionary<string, string>? featureFlags = null,
         Dictionary<string, ReportDiagnostic>? diagnosticsToSuppress = null,
@@ -183,9 +183,8 @@ internal sealed class VerifyGlue
             string.Join("\n", errors.Select(e => $"  - {e.Id}: {e.GetMessage()} at {e.Location}"))
         );
 
-        return Task.CompletedTask;
-        // await Verify(driver)
-        //     .DisableDiff();
+        await Verify(driver)
+            .DisableDiff();
     }
 }
 

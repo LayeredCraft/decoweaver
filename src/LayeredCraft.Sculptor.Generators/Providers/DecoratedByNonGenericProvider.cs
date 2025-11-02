@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sculptor.Model;
@@ -10,36 +11,50 @@ internal static class DecoratedByNonGenericProvider
     internal static bool Predicate(SyntaxNode node, CancellationToken _)
         => node is ClassDeclarationSyntax;
 
-    internal static DecoratorToIntercept? Transformer(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
+    /// <summary>
+    /// Processes all [DecoratedBy] attributes on a class, yielding one DecoratorToIntercept per attribute.
+    /// This allows multiple decorators to be applied to the same implementation.
+    /// </summary>
+    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorSyntaxContext ctx, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        if (ctx.TargetSymbol is not INamedTypeSymbol implDef)
-            return null;
+        if (ctx.Node is not ClassDeclarationSyntax classSyntax)
+            yield break;
 
-        var attr = ctx.Attributes[0]; // matched [DecoratedBy(typeof(...), order: ?)]
+        var symbol = ctx.SemanticModel.GetDeclaredSymbol(classSyntax, ct);
+        if (symbol is not INamedTypeSymbol implDef)
+            yield break;
 
-        var isInterceptable = GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
-        if (!isInterceptable) return null;
+        // Get all [DecoratedBy] attributes on this class
+        foreach (var attr in implDef.GetAttributes())
+        {
+            // Only process DecoratedByAttribute (non-generic version)
+            if (attr.AttributeClass?.ToDisplayString() != "Sculptor.Attributes.DecoratedByAttribute")
+                continue;
 
-        // Order can be either ctor arg #1 (int) or named arg "Order"
-        var order = GetIntNamedArg(attr, "Order", defaultValue: 0);
-        if (order == 0 && attr.ConstructorArguments is [_, { Value: int ctorOrder } _, ..])
-            order = ctorOrder;
+            var isInterceptable = GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
+            if (!isInterceptable) continue;
 
-        // First ctor arg is the Type
-        if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Kind != TypedConstantKind.Type)
-            return null;
+            // Order can be either ctor arg #1 (int) or named arg "Order"
+            var order = GetIntNamedArg(attr, "Order", defaultValue: 0);
+            if (order == 0 && attr.ConstructorArguments.Length >= 2 && attr.ConstructorArguments[1].Value is int ctorOrder)
+                order = ctorOrder;
 
-        var decoratorSym = (ITypeSymbol?)attr.ConstructorArguments[0].Value;
-        if (decoratorSym is null) return null;
+            // First ctor arg is the Type
+            if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Kind != TypedConstantKind.Type)
+                continue;
 
-        return new DecoratorToIntercept(
-            ImplementationDef: implDef.ToTypeId().Definition,
-            DecoratorDef:      decoratorSym.ToTypeId().Definition,
-            Order:             order,
-            IsInterceptable:   true,
-            Location:          ctx.TargetNode.ToLocationId());
+            var decoratorSym = (ITypeSymbol?)attr.ConstructorArguments[0].Value;
+            if (decoratorSym is null) continue;
+
+            yield return new DecoratorToIntercept(
+                ImplementationDef: implDef.ToTypeId().Definition,
+                DecoratorDef: decoratorSym.ToTypeId().Definition,
+                Order: order,
+                IsInterceptable: true,
+                Location: classSyntax.ToLocationId());
+        }
     }
 
     private static bool GetBoolNamedArg(AttributeData a, string name, bool defaultValue)

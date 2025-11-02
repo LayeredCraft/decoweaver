@@ -7,13 +7,32 @@ public interface IRepository<T>
     void Save(T item);
 }
 
-[DecoratedBy(typeof(LoggingRepository<>), 2)]
-[DecoratedBy(typeof(CachingRepository<>), 1)]
+// Three decorators for deep nesting test
+// Order: Audit(1) -> Caching(2) -> Logging(3)
+[DecoratedBy(typeof(AuditRepository<>), Order = 1)]
+[DecoratedBy(typeof(CachingRepository<>), Order = 2)]
+[DecoratedBy(typeof(LoggingRepository<>), Order = 3)]
 public sealed class DynamoDbRepository<T> : IRepository<T>
 {
     public void Save(T item)
     {
         Console.WriteLine($"Saving in {nameof(DynamoDbRepository<>)}, type: {typeof(T).Name}");
+    }
+}
+
+public sealed class AuditRepository<T> : IRepository<T>
+{
+    private readonly IRepository<T> _innerRepository;
+
+    public AuditRepository(IRepository<T> innerRepository)
+    {
+        _innerRepository = innerRepository;
+    }
+
+    public void Save(T item)
+    {
+        Console.WriteLine("Auditing save operation.");
+        _innerRepository.Save(item);
     }
 }
 

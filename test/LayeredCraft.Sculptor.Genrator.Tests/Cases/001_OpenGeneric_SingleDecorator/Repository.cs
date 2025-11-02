@@ -7,8 +7,7 @@ public interface IRepository<T>
     void Save(T item);
 }
 
-[DecoratedBy(typeof(LoggingRepository<>), 2)]
-[DecoratedBy(typeof(CachingRepository<>), 1)]
+[DecoratedBy(typeof(CachingRepository<>))]
 public sealed class DynamoDbRepository<T> : IRepository<T>
 {
     public void Save(T item)
@@ -29,22 +28,6 @@ public sealed class CachingRepository<T> : IRepository<T>
     public void Save(T item)
     {
         Console.WriteLine("Saved item to cache.");
-        _innerRepository.Save(item);
-    }
-}
-
-public sealed class LoggingRepository<T> : IRepository<T>
-{
-    private readonly IRepository<T> _innerRepository;
-
-    public LoggingRepository(IRepository<T> innerRepository)
-    {
-        _innerRepository = innerRepository;
-    }
-
-    public void Save(T item)
-    {
-        Console.WriteLine("Logging save operation.");
         _innerRepository.Save(item);
     }
 }

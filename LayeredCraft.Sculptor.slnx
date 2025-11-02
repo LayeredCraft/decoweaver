@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/LayeredCraft.Sculptor.Generators/LayeredCraft.Sculptor.Generators.csproj" />

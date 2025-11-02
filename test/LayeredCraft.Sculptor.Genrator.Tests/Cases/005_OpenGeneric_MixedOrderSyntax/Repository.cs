@@ -7,8 +7,10 @@ public interface IRepository<T>
     void Save(T item);
 }
 
+// Mixed order specification: positional vs named property
+// Logging uses positional (2), Caching uses named property (1)
 [DecoratedBy(typeof(LoggingRepository<>), 2)]
-[DecoratedBy(typeof(CachingRepository<>), 1)]
+[DecoratedBy(typeof(CachingRepository<>), Order = 1)]
 public sealed class DynamoDbRepository<T> : IRepository<T>
 {
     public void Save(T item)

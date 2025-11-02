@@ -7,12 +7,13 @@ public interface IRepository<T>
     void Save(T item);
 }
 
-[DecoratedBy(typeof(CachingRepository<>))]
+// Using positional order parameter in constructor (ChatGPT fix verification)
+[DecoratedBy(typeof(CachingRepository<>), 1)]
 public sealed class DynamoDbRepository<T> : IRepository<T>
 {
     public void Save(T item)
     {
-        Console.WriteLine($"Saving in {nameof(DynamoDbRepository<>)}");
+        Console.WriteLine($"Saving in {nameof(DynamoDbRepository<>)}, type: {typeof(T).Name}");
     }
 }
 

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Sculptor.Emit;
@@ -40,11 +41,12 @@ public sealed class SculptorGenerator : IIncrementalGenerator
             .WithTrackingName(TrackingNames.Attr_Generic_Stream);
 
         // --- [DecoratedBy(typeof(...))] non-generic stream -------------------
+        // Use CreateSyntaxProvider to handle multiple [DecoratedBy] attributes on the same class
         var nonGenericDecorations = context.SyntaxProvider
-            .ForAttributeWithMetadataName(
-                Attributes.DecoratedByAttribute,
-                predicate: DecoratedByNonGenericProvider.Predicate,
-                transform: DecoratedByNonGenericProvider.Transformer)
+            .CreateSyntaxProvider(
+                predicate: static (node, ct) => DecoratedByNonGenericProvider.Predicate(node, ct),
+                transform: static (ctx, ct) => DecoratedByNonGenericProvider.TransformMultiple(ctx, ct))
+            .SelectMany(static (decorators, _) => decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
             .WithTrackingName(TrackingNames.Attr_NonGeneric_Transform)
             .Where(static x => x is not null)
             .WithTrackingName(TrackingNames.Attr_NonGeneric_FilterNotNull)
@@ -99,8 +101,17 @@ public sealed class SculptorGenerator : IIncrementalGenerator
                 var allDecos = genericDecos.AddRange(nonGenericDecos);
                 var byImpl = BuildDecorationMap(allDecos); // Dictionary<TypeDefId, EquatableArray<TypeDefId>>
 
+                // Only emit interceptors for registrations that have decorators
+                var regsWithDecorators = regs
+                    .Where(r => byImpl.ContainsKey(r.ImplDef) && byImpl[r.ImplDef].Count > 0)
+                    .ToList();
+
+                // Skip emission entirely if there are no registrations with decorators
+                if (regsWithDecorators.Count == 0)
+                    return;
+
                 var source = InterceptorEmitter.EmitClosedGenericInterceptors(
-                    registrations: regs.ToEquatableArray(),
+                    registrations: regsWithDecorators.ToEquatableArray(),
                     decoratorsByImplementation: byImpl);
 
                 spc.AddSource("Sculptor.Interceptors.ClosedGenerics.g.cs", source);

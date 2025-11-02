@@ -7,8 +7,10 @@ public interface IRepository<T>
     void Save(T item);
 }
 
-[DecoratedBy(typeof(LoggingRepository<>), 2)]
-[DecoratedBy(typeof(CachingRepository<>), 1)]
+// Multiple decorators without explicit order (both default to 0)
+// Should apply in declaration order
+[DecoratedBy(typeof(CachingRepository<>))]
+[DecoratedBy(typeof(LoggingRepository<>))]
 public sealed class DynamoDbRepository<T> : IRepository<T>
 {
     public void Save(T item)

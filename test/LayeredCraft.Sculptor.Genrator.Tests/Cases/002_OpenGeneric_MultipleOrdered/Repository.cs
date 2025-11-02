@@ -7,8 +7,8 @@ public interface IRepository<T>
     void Save(T item);
 }
 
-[DecoratedBy(typeof(LoggingRepository<>), 2)]
-[DecoratedBy(typeof(CachingRepository<>), 1)]
+[DecoratedBy(typeof(LoggingRepository<>), Order = 2)]
+[DecoratedBy(typeof(CachingRepository<>), Order = 1)]
 public sealed class DynamoDbRepository<T> : IRepository<T>
 {
     public void Save(T item)
