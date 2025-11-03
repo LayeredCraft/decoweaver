@@ -35,17 +35,3 @@ public sealed class DecoratedByAttribute(Type decoratorType, int order = 0) : At
     public bool IsInterceptable { get; set; } = true;
 }
 
-/// <summary>
-/// Declares a decorator for every registration of <paramref name="serviceType"/> in this assembly.
-/// Applies to each implementation of the service unless explicitly opted out.
-/// </summary>
-[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-[Conditional("SCULPTOR_EMIT_ATTRIBUTE_METADATA")]
-[EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class DecorateServiceAttribute(Type serviceType, Type decoratorType, int order = 0) : Attribute
-{
-    public Type ServiceType { get; set; } = serviceType;
-    public Type DecoratorType { get; set; } = decoratorType;
-    public int Order { get; set; } = order;
-    public bool IsInterceptable { get; set; } = true;
-}
