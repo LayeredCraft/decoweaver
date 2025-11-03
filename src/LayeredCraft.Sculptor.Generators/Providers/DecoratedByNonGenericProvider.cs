@@ -33,11 +33,11 @@ internal static class DecoratedByNonGenericProvider
             if (attr.AttributeClass?.ToDisplayString() != "Sculptor.Attributes.DecoratedByAttribute")
                 continue;
 
-            var isInterceptable = GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
+            var isInterceptable = AttributeHelpers.GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
             if (!isInterceptable) continue;
 
             // Order can be either ctor arg #1 (int) or named arg "Order"
-            var order = GetIntNamedArg(attr, "Order", defaultValue: 0);
+            var order = AttributeHelpers.GetIntNamedArg(attr, "Order", defaultValue: 0);
             if (order == 0 && attr.ConstructorArguments.Length >= 2 && attr.ConstructorArguments[1].Value is int ctorOrder)
                 order = ctorOrder;
 
@@ -55,19 +55,5 @@ internal static class DecoratedByNonGenericProvider
                 IsInterceptable: true,
                 Location: classSyntax.ToLocationId());
         }
-    }
-
-    private static bool GetBoolNamedArg(AttributeData a, string name, bool defaultValue)
-    {
-        foreach (var (n, v) in a.NamedArguments)
-            if (n == name && v.Value is bool b) return b;
-        return defaultValue;
-    }
-
-    private static int GetIntNamedArg(AttributeData a, string name, int defaultValue)
-    {
-        foreach (var (n, v) in a.NamedArguments)
-            if (n == name && v.Value is int i) return i;
-        return defaultValue;
     }
 }

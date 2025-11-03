@@ -118,4 +118,148 @@ public class SculptorGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Generic_SingleDecorator_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/010_Generic_SingleDecorator/Repository.cs",
+                "Cases/010_Generic_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Generic_MultipleOrdered_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/011_Generic_MultipleOrdered/Repository.cs",
+                "Cases/011_Generic_MultipleOrdered/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Generic_MixedSyntax_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/012_Generic_MixedSyntax/Repository.cs",
+                "Cases/012_Generic_MixedSyntax/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Generic_IsInterceptableFalse_NoInterceptorGenerated(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/013_Generic_IsInterceptableFalse/Repository.cs",
+                "Cases/013_Generic_IsInterceptableFalse/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Transient_SingleDecorator_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/014_Transient_SingleDecorator/Repository.cs",
+                "Cases/014_Transient_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Transient_MultipleDecorators_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/015_Transient_MultipleDecorators/Repository.cs",
+                "Cases/015_Transient_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Singleton_SingleDecorator_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/016_Singleton_SingleDecorator/Repository.cs",
+                "Cases/016_Singleton_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Singleton_MultipleDecorators_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/017_Singleton_MultipleDecorators/Repository.cs",
+                "Cases/017_Singleton_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Transient_Generic_SingleDecorator_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/018_Transient_Generic_SingleDecorator/Repository.cs",
+                "Cases/018_Transient_Generic_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Transient_Generic_MultipleDecorators_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/019_Transient_Generic_MultipleDecorators/Repository.cs",
+                "Cases/019_Transient_Generic_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Singleton_Generic_SingleDecorator_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/020_Singleton_Generic_SingleDecorator/Repository.cs",
+                "Cases/020_Singleton_Generic_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task Singleton_Generic_MultipleDecorators_GeneratesCorrectInterceptor(SculptorGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/021_Singleton_Generic_MultipleDecorators/Repository.cs",
+                "Cases/021_Singleton_Generic_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }

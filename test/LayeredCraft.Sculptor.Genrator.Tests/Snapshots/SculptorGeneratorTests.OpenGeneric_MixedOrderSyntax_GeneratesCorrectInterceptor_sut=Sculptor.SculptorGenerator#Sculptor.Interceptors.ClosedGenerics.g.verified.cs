@@ -46,8 +46,8 @@ namespace Sculptor.Generated
         {
             public static object For(Type serviceType, Type implementationType)
             {
-                var s = serviceType.AssemblyQualifiedName;
-                var i = implementationType.AssemblyQualifiedName;
+                var s = serviceType.AssemblyQualifiedName ?? serviceType.FullName ?? serviceType.Name;
+                var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;
                 return string.Concat(s, "|", i);
             }
         }

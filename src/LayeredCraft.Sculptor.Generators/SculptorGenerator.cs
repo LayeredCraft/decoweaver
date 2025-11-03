@@ -29,11 +29,13 @@ public sealed class SculptorGenerator : IIncrementalGenerator
             });
 
         // --- [DecoratedBy<T>] generic stream --------------------------------
+        // Use ForAttributeWithMetadataName to handle multiple [DecoratedBy<T>] attributes on the same class
         var genericDecorations = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 Attributes.GenericDecoratedByAttribute,
                 predicate: DecoratedByGenericProvider.Predicate,
-                transform: DecoratedByGenericProvider.Transformer)
+                transform: DecoratedByGenericProvider.TransformMultiple)
+            .SelectMany(static (decorators, _) => decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
             .WithTrackingName(TrackingNames.Attr_Generic_Transform)
             .Where(static x => x is not null)
             .WithTrackingName(TrackingNames.Attr_Generic_FilterNotNull)
@@ -103,15 +105,15 @@ public sealed class SculptorGenerator : IIncrementalGenerator
 
                 // Only emit interceptors for registrations that have decorators
                 var regsWithDecorators = regs
-                    .Where(r => byImpl.ContainsKey(r.ImplDef) && byImpl[r.ImplDef].Count > 0)
-                    .ToList();
+                    .Where(r => byImpl.TryGetValue(r.ImplDef, out var decos) && decos.Count > 0)
+                    .ToEquatableArray();
 
                 // Skip emission entirely if there are no registrations with decorators
                 if (regsWithDecorators.Count == 0)
                     return;
 
                 var source = InterceptorEmitter.EmitClosedGenericInterceptors(
-                    registrations: regsWithDecorators.ToEquatableArray(),
+                    registrations: regsWithDecorators,
                     decoratorsByImplementation: byImpl);
 
                 spc.AddSource("Sculptor.Interceptors.ClosedGenerics.g.cs", source);
@@ -134,7 +136,7 @@ public sealed class SculptorGenerator : IIncrementalGenerator
         foreach (var (impl, list) in tmp)
         {
             list.Sort(static (a, b) => a.Order.CompareTo(b.Order));
-            var unique = list.Select(x => x.Deco).Distinct().ToList();
+            var unique = list.Select(x => x.Deco).Distinct();
             result[impl] = new EquatableArray<TypeDefId>(unique);
         }
         return result;

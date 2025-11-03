@@ -20,23 +20,23 @@ namespace Sculptor.Generated
 
     file static class SculptorInterceptors
     {
-        [InterceptsLocation(version: 1, data: "MjfliCivfRddqCg5txY+V/4AAABQcm9ncmFtLmNz")]
-        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::Sculptor.Sample.IRepository<Customer>, global::Sculptor.Sample.DynamoDbRepository<Customer>&gt;(IServiceCollection)</summary>
-        internal static IServiceCollection AddScoped_0<TService, TImplementation>(this IServiceCollection services)
+        [InterceptsLocation(version: 1, data: "gWpL+/+GQbWeZj9WE5QaUuQAAABQcm9ncmFtLmNz")]
+        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddSingleton&lt;global::Sculptor.Sample.IUserService, global::Sculptor.Sample.UserService&gt;(IServiceCollection)</summary>
+        internal static IServiceCollection AddSingleton_0<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
             // Register the undecorated implementation as a keyed service
-            var key = DecoratorKeys.For(typeof(global::Sculptor.Sample.IRepository<Customer>), typeof(global::Sculptor.Sample.DynamoDbRepository<Customer>));
-            services.AddKeyedScoped<global::Sculptor.Sample.IRepository<Customer>, global::Sculptor.Sample.DynamoDbRepository<Customer>>(key);
+            var key = DecoratorKeys.For(typeof(global::Sculptor.Sample.IUserService), typeof(global::Sculptor.Sample.UserService));
+            services.AddKeyedSingleton<global::Sculptor.Sample.IUserService, global::Sculptor.Sample.UserService>(key);
 
             // Register factory that applies decorators
-            services.AddScoped<global::Sculptor.Sample.IRepository<Customer>>(sp =>
+            services.AddSingleton<global::Sculptor.Sample.IUserService>(sp =>
             {
-                var current = (global::Sculptor.Sample.IRepository<Customer>)sp.GetRequiredKeyedService<global::Sculptor.Sample.IRepository<Customer>>(key)!;
+                var current = (global::Sculptor.Sample.IUserService)sp.GetRequiredKeyedService<global::Sculptor.Sample.IUserService>(key)!;
                 // Compose decorators (innermost to outermost)
-                current = (global::Sculptor.Sample.IRepository<Customer>)DecoratorFactory.Create(sp, typeof(global::Sculptor.Sample.IRepository<Customer>), typeof(global::Sculptor.Sample.CachingRepository<>), current);
-                current = (global::Sculptor.Sample.IRepository<Customer>)DecoratorFactory.Create(sp, typeof(global::Sculptor.Sample.IRepository<Customer>), typeof(global::Sculptor.Sample.LoggingRepository<>), current);
+                current = (global::Sculptor.Sample.IUserService)DecoratorFactory.Create(sp, typeof(global::Sculptor.Sample.IUserService), typeof(global::Sculptor.Sample.UserAuditDecorator), current);
+                current = (global::Sculptor.Sample.IUserService)DecoratorFactory.Create(sp, typeof(global::Sculptor.Sample.IUserService), typeof(global::Sculptor.Sample.UserLoggingDecorator), current);
                 return current;
             });
             return services;

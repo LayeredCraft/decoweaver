@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sculptor.Model;
@@ -10,48 +11,45 @@ internal static class DecoratedByGenericProvider
     internal static bool Predicate(SyntaxNode node, CancellationToken _)
         => node is ClassDeclarationSyntax;
 
-    internal static DecoratorToIntercept? Transformer(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
+    /// <summary>
+    /// Transforms all [DecoratedBy&lt;T&gt;] attributes on a single class into multiple DecoratorToIntercept records.
+    /// </summary>
+    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         if (ctx.TargetSymbol is not INamedTypeSymbol implDef)
-            return null;
+            yield break;
 
-        var attr = ctx.Attributes[0]; // matched [DecoratedBy<TDecorator>]
+        // Process all [DecoratedBy<T>] attributes on this class
+        foreach (var attr in ctx.Attributes)
+        {
+            // Only process DecoratedByAttribute<T> (generic version)
+            if (attr.AttributeClass is not { IsGenericType: true, TypeArguments.Length: 1 })
+                continue;
 
-        // Named arg: IsInterceptable (default true)
-        var isInterceptable = GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
-        if (!isInterceptable) return null;
+            // Verify this is the correct generic attribute using metadata name and namespace
+            var attrClass = attr.AttributeClass;
+            if (attrClass.MetadataName != "DecoratedByAttribute`1")
+                continue;
+            if (attrClass.ContainingNamespace?.ToDisplayString() != "Sculptor.Attributes")
+                continue;
 
-        // Named arg: Order (default 0)
-        var order = GetIntNamedArg(attr, "Order", defaultValue: 0);
+            var isInterceptable = AttributeHelpers.GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
+            if (!isInterceptable) continue;
 
-        // Extract TDecorator from DecoratedByAttribute<TDecorator>
-        if (attr.AttributeClass is not { TypeArguments.Length: 1 } g)
-            return null;
+            var order = AttributeHelpers.GetIntNamedArg(attr, "Order", defaultValue: 0);
 
-        var decoratorSym = g.TypeArguments[0];
-        if (decoratorSym is null) return null;
+            // Extract TDecorator from DecoratedByAttribute<TDecorator>
+            var decoratorSym = attr.AttributeClass.TypeArguments[0];
+            if (decoratorSym is null) continue;
 
-        return new DecoratorToIntercept(
-            ImplementationDef: implDef.ToTypeId().Definition, // def-only identity
-            DecoratorDef:      decoratorSym.ToTypeId().Definition,
-            Order:             order,
-            IsInterceptable:   true,
-            Location:          ctx.TargetNode.ToLocationId());
-    }
-
-    private static bool GetBoolNamedArg(AttributeData a, string name, bool defaultValue)
-    {
-        foreach (var (n, v) in a.NamedArguments)
-            if (n == name && v.Value is bool b) return b;
-        return defaultValue;
-    }
-
-    private static int GetIntNamedArg(AttributeData a, string name, int defaultValue)
-    {
-        foreach (var (n, v) in a.NamedArguments)
-            if (n == name && v.Value is int i) return i;
-        return defaultValue;
+            yield return new DecoratorToIntercept(
+                ImplementationDef: implDef.ToTypeId().Definition,
+                DecoratorDef: decoratorSym.ToTypeId().Definition,
+                Order: order,
+                IsInterceptable: true,
+                Location: ctx.TargetNode.ToLocationId());
+        }
     }
 }

@@ -20,18 +20,18 @@ namespace Sculptor.Generated
 
     file static class SculptorInterceptors
     {
-        [InterceptsLocation(version: 1, data: "MjfliCivfRddqCg5txY+V/4AAABQcm9ncmFtLmNz")]
-        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::Sculptor.Sample.IRepository<Customer>, global::Sculptor.Sample.DynamoDbRepository<Customer>&gt;(IServiceCollection)</summary>
-        internal static IServiceCollection AddScoped_0<TService, TImplementation>(this IServiceCollection services)
+        [InterceptsLocation(version: 1, data: "dzNgpp9m2vN/qdksBSROXtsAAABQcm9ncmFtLmNz")]
+        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddSingleton&lt;global::Sculptor.Sample.IRepository<Customer>, global::Sculptor.Sample.DynamoDbRepository<Customer>&gt;(IServiceCollection)</summary>
+        internal static IServiceCollection AddSingleton_0<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
             // Register the undecorated implementation as a keyed service
             var key = DecoratorKeys.For(typeof(global::Sculptor.Sample.IRepository<Customer>), typeof(global::Sculptor.Sample.DynamoDbRepository<Customer>));
-            services.AddKeyedScoped<global::Sculptor.Sample.IRepository<Customer>, global::Sculptor.Sample.DynamoDbRepository<Customer>>(key);
+            services.AddKeyedSingleton<global::Sculptor.Sample.IRepository<Customer>, global::Sculptor.Sample.DynamoDbRepository<Customer>>(key);
 
             // Register factory that applies decorators
-            services.AddScoped<global::Sculptor.Sample.IRepository<Customer>>(sp =>
+            services.AddSingleton<global::Sculptor.Sample.IRepository<Customer>>(sp =>
             {
                 var current = (global::Sculptor.Sample.IRepository<Customer>)sp.GetRequiredKeyedService<global::Sculptor.Sample.IRepository<Customer>>(key)!;
                 // Compose decorators (innermost to outermost)
