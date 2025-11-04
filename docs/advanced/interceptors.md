@@ -1,6 +1,6 @@
 # Interceptors
 
-Sculptor uses C# 11's experimental interceptors feature to rewrite dependency injection registration calls at compile time. This page explains how interceptors work and how Sculptor uses them.
+DecoWeaver uses C# 11's experimental interceptors feature to rewrite dependency injection registration calls at compile time. This page explains how interceptors work and how DecoWeaver uses them.
 
 ## What are Interceptors?
 
@@ -27,11 +27,11 @@ file static class Interceptors
 
 When compiled, the original `Console.WriteLine("Hello")` call is redirected to the interceptor method, which adds a `[LOG]` prefix.
 
-## How Sculptor Uses Interceptors
+## How DecoWeaver Uses Interceptors
 
-Sculptor intercepts DI registration calls to apply decorators automatically.
+DecoWeaver intercepts DI registration calls to apply decorators automatically.
 
-### Without Sculptor
+### Without DecoWeaver
 
 Traditional manual decoration:
 
@@ -45,7 +45,7 @@ services.AddScoped<IUserRepository>(sp =>
 });
 ```
 
-### With Sculptor
+### With DecoWeaver
 
 Automatic decoration at compile time:
 
@@ -57,20 +57,20 @@ public class UserRepository : IUserRepository { }
 // Your code
 services.AddScoped<IUserRepository, UserRepository>();
 
-// Sculptor generates an interceptor that rewrites this to:
+// DecoWeaver generates an interceptor that rewrites this to:
 services.AddScoped<IUserRepository>(/* factory with decorators */);
 ```
 
 ## Generated Interceptor Code
 
-When you apply `[DecoratedBy]` attributes, Sculptor generates interceptor code like this:
+When you apply `[DecoratedBy]` attributes, DecoWeaver generates interceptor code like this:
 
 ```csharp
 // Your code
 services.AddScoped<IUserRepository, UserRepository>();
 
 // Generated interceptor
-file static class SculptorInterceptors
+file static class DecoWeaverInterceptors
 {
     [InterceptsLocation(version: 1, data: "base64-encoded-hash")]
     public static IServiceCollection AddScoped_IUserRepository_UserRepository(
@@ -140,14 +140,14 @@ public static IServiceCollection AddScoped_IUserRepository_UserRepository(
 }
 ```
 
-This allows Sculptor to intercept all registrations of `UserRepository` across your codebase.
+This allows DecoWeaver to intercept all registrations of `UserRepository` across your codebase.
 
 ## File-Scoped Types
 
-Sculptor uses file-scoped types (`file` keyword) to prevent naming collisions:
+DecoWeaver uses file-scoped types (`file` keyword) to prevent naming collisions:
 
 ```csharp
-file static class SculptorInterceptors
+file static class DecoWeaverInterceptors
 {
     // This class is only visible within this file
 }
@@ -161,21 +161,21 @@ This prevents conflicts when generating interceptors in multiple files.
 
 1. Build your project
 2. Solution Explorer → Show All Files
-3. Navigate to `obj/Debug/net8.0/generated/Sculptor.Generators/`
-4. Open `Sculptor.Interceptors.g.cs`
+3. Navigate to `obj/Debug/net8.0/generated/DecoWeaver.Generators/`
+4. Open `DecoWeaver.Interceptors.g.cs`
 
 ### Rider
 
 1. Build your project
 2. Solution Explorer → Show Generated Files
-3. Expand the Sculptor.Generators node
-4. Open `Sculptor.Interceptors.g.cs`
+3. Expand the DecoWeaver.Generators node
+4. Open `DecoWeaver.Interceptors.g.cs`
 
 ### Visual Studio Code
 
 1. Build your project
-2. Navigate to `obj/Debug/net8.0/generated/Sculptor.Generators/`
-3. Open `Sculptor.Interceptors.g.cs`
+2. Navigate to `obj/Debug/net8.0/generated/DecoWeaver.Generators/`
+3. Open `DecoWeaver.Interceptors.g.cs`
 
 ## Interceptor Requirements
 
@@ -193,7 +193,7 @@ Interceptors require C# 11 or later:
 </Project>
 ```
 
-The Sculptor package automatically enables the interceptors feature, so you don't need to manually configure any experimental feature flags.
+The DecoWeaver package automatically enables the interceptors feature, so you don't need to manually configure any experimental feature flags.
 
 ### Method Signature Match
 
@@ -219,7 +219,7 @@ public static IServiceCollection AddScoped<TService, TImplementation>(
 
 ## Open Generic Interceptors
 
-For open generic registrations, Sculptor generates interceptors that work with runtime types:
+For open generic registrations, DecoWeaver generates interceptors that work with runtime types:
 
 ```csharp
 // Your code
@@ -287,7 +287,7 @@ If decorators aren't being applied:
 Add logging to see which interceptors are generated:
 
 ```csharp
-// This is handled by Sculptor's source generator
+// This is handled by DecoWeaver's source generator
 // Check build output for diagnostic messages
 ```
 
@@ -348,7 +348,7 @@ Interceptors are currently experimental in C# 11:
 - Some IDEs may show warnings
 - Feature may be refined or stabilized in C# 12+
 
-Sculptor uses interceptors safely within their documented capabilities. The feature is stable enough for production use with .NET 8+.
+DecoWeaver uses interceptors safely within their documented capabilities. The feature is stable enough for production use with .NET 8+.
 
 ## Future of Interceptors
 
@@ -359,7 +359,7 @@ Microsoft is actively working on interceptors:
 - Better debugging experience
 - Additional use cases beyond DI
 
-Sculptor will continue to support and leverage interceptors as the feature evolves.
+DecoWeaver will continue to support and leverage interceptors as the feature evolves.
 
 ## Next Steps
 

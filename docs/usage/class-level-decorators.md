@@ -1,6 +1,6 @@
 # Class-Level Decorators
 
-The `[DecoratedBy]` attribute is the primary way to apply decorators in Sculptor. Apply it to your service implementation classes to automatically wrap them with decorators.
+The `[DecoratedBy]` attribute is the primary way to apply decorators in DecoWeaver. Apply it to your service implementation classes to automatically wrap them with decorators.
 
 ## Basic Syntax
 
@@ -9,7 +9,7 @@ The `[DecoratedBy]` attribute is the primary way to apply decorators in Sculptor
 The most common and type-safe approach:
 
 ```csharp
-using Sculptor.Attributes;
+using DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingDecorator>]
 public class UserRepository : IUserRepository
@@ -23,7 +23,7 @@ public class UserRepository : IUserRepository
 Alternative syntax using `typeof()`:
 
 ```csharp
-using Sculptor.Attributes;
+using DecoWeaver.Attributes;
 
 [DecoratedBy(typeof(LoggingDecorator))]
 public class UserRepository : IUserRepository
@@ -50,7 +50,7 @@ public interface IUserRepository { }
 
 ## Decorator Requirements
 
-For Sculptor to work correctly, your decorator must:
+For DecoWeaver to work correctly, your decorator must:
 
 1. **Implement the same interface** as the decorated class
 2. **Accept the interface as a constructor parameter** (typically first parameter)
@@ -100,7 +100,7 @@ Once you've applied the attribute, register your service normally:
 ```csharp
 var services = new ServiceCollection();
 
-// Sculptor automatically applies the decorator
+// DecoWeaver automatically applies the decorator
 services.AddScoped<IUserRepository, UserRepository>();
 
 // Or with other lifetimes
@@ -108,7 +108,7 @@ services.AddSingleton<IUserRepository, UserRepository>();
 services.AddTransient<IUserRepository, UserRepository>();
 ```
 
-Sculptor intercepts these registration calls and wraps your implementation with the decorator.
+DecoWeaver intercepts these registration calls and wraps your implementation with the decorator.
 
 ## Decorator Dependencies
 

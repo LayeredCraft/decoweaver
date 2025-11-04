@@ -1,0 +1,17 @@
+using Microsoft.Extensions.DependencyInjection;
+using DecoWeaver.Sample;
+
+// Test singleton lifetime with decorator
+var serviceProvider = new ServiceCollection()
+    .AddSingleton<IRepository<Customer>, DynamoDbRepository<Customer>>()
+    .BuildServiceProvider();
+
+var customerRepo = serviceProvider.GetRequiredService<IRepository<Customer>>();
+Console.WriteLine($"Resolved: {customerRepo.GetType().Name}");
+customerRepo.Save(new Customer { Id = 1, Name = "Test Customer" });
+
+public class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}

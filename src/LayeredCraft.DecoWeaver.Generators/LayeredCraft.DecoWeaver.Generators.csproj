@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <IsPackable>true</IsPackable>
+        <ImplicitUsings>true</ImplicitUsings>
+        <PackageId>DecoWeaver</PackageId>
+        <AssemblyName>$(PackageId)</AssemblyName>
+        <RootNamespace>$(PackageId)</RootNamespace>
+        <Title>$(PackageId)</Title>
+        <Description>DecoWeaver is a .NET incremental source generator that enables compile-time decorator registration using C# 11+ interceptors. Zero runtime overhead, type-safe decorator chains, and full open generic support for .NET dependency injection.</Description>
+        <PackageTags>source-generator;roslyn;dependency-injection;decorator-pattern;interceptors;compile-time;aop;di;ioc;dotnet</PackageTags>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <!-- Keep Roslyn deps private so they don't leak to consumers -->
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all"/>
+        <PackageReference Include="Polyfill" Version="8.9.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <ProjectReference Include="..\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" PrivateAssets="All" />
+    </ItemGroup>
+
+    <!-- Optional: write generated files locally while debugging this project itself -->
+    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+
+    <!-- Pack this generator DLL as an analyzer so consumers pick it up automatically -->
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="..\LayeredCraft.DecoWeaver.Attributes\bin\$(Configuration)\netstandard2.0\DecoWeaver.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="true" />
+        <None Include="..\LayeredCraft.DecoWeaver.Attributes\bin\$(Configuration)\netstandard2.0\DecoWeaver.Attributes.xml" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
+        <None Include="DecoWeaver.props" Pack="true" PackagePath="build" />
+        <None Include="DecoWeaver.targets" Pack="true" PackagePath="build" />
+    </ItemGroup>
+
+</Project>

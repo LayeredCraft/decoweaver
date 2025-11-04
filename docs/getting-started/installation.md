@@ -2,30 +2,30 @@
 
 ## NuGet Package
 
-Install Sculptor via the .NET CLI:
+Install DecoWeaver via the .NET CLI:
 
 ```bash
-dotnet add package Sculptor
+dotnet add package DecoWeaver
 ```
 
 Or via Package Manager Console in Visual Studio:
 
 ```powershell
-Install-Package Sculptor
+Install-Package DecoWeaver
 ```
 
 Or add directly to your `.csproj` file:
 
 ```xml
-<PackageReference Include="Sculptor" Version="1.0.0" />
+<PackageReference Include="DecoWeaver" Version="1.0.0" />
 ```
 
 ## Package Contents
 
-The Sculptor NuGet package includes:
+The DecoWeaver NuGet package includes:
 
-- **Sculptor.Attributes.dll** - Runtime attributes (zero footprint with `[Conditional]`)
-- **Sculptor.dll** - Source generator (build-time only)
+- **DecoWeaver.Attributes.dll** - Runtime attributes (zero footprint with `[Conditional]`)
+- **DecoWeaver.dll** - Source generator (build-time only)
 
 ## Verify Installation
 
@@ -33,7 +33,7 @@ After installation, verify the generator is working:
 
 1. Add a simple decorator attribute to a class
 2. Build your project
-3. Check for generated files in `obj/Debug/{targetFramework}/generated/Sculptor/`
+3. Check for generated files in `obj/Debug/{targetFramework}/generated/DecoWeaver/`
 
 ## IDE Support
 

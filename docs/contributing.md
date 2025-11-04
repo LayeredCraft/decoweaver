@@ -1,6 +1,6 @@
-# Contributing to Sculptor
+# Contributing to DecoWeaver
 
-Thank you for your interest in contributing to Sculptor! This guide will help you get started.
+Thank you for your interest in contributing to DecoWeaver! This guide will help you get started.
 
 ## Code of Conduct
 
@@ -10,7 +10,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Reporting Bugs
 
-Before creating a bug report, please check the [existing issues](https://github.com/LayeredCraft/sculptor/issues) to avoid duplicates.
+Before creating a bug report, please check the [existing issues](https://github.com/layeredcraft/decoweaver/issues) to avoid duplicates.
 
 When reporting a bug, include:
 
@@ -54,8 +54,8 @@ We welcome pull requests for:
 
    ```bash
    # Fork via GitHub UI, then clone your fork
-   git clone https://github.com/YOUR_USERNAME/sculptor.git
-   cd sculptor
+   git clone https://github.com/YOUR_USERNAME/decoweaver.git
+   cd decoweaver
    ```
 
 2. **Create a feature branch**
@@ -87,14 +87,14 @@ We welcome pull requests for:
 ## Project Structure
 
 ```
-sculptor/
+decoweaver/
 ├── src/
-│   ├── LayeredCraft.Sculptor.Attributes/     # Runtime attributes
-│   └── LayeredCraft.Sculptor.Generators/     # Source generator
+│   ├── LayeredCraft.DecoWeaver.Attributes/     # Runtime attributes
+│   └── LayeredCraft.DecoWeaver.Generators/     # Source generator
 ├── samples/
-│   └── Sculptor.Sample/                      # Sample project
+│   └── DecoWeaver.Sample/                      # Sample project
 ├── test/
-│   └── LayeredCraft.Sculptor.Generator.Tests/ # Unit tests
+│   └── LayeredCraft.DecoWeaver.Generator.Tests/ # Unit tests
 └── docs/                                      # Documentation
 ```
 
@@ -155,7 +155,7 @@ All code changes should include tests:
 [Theory]
 [GeneratorAutoData]
 public async Task Generator_AppliesDecorators_ForClassWithAttribute(
-    SculptorGenerator generator,
+    DecoWeaverGenerator generator,
     string[] casePaths)
 {
     // Arrange
@@ -254,7 +254,7 @@ refactor: simplify decorator resolution logic
 dotnet test
 
 # Run specific test
-dotnet test --filter "FullyQualifiedName~SculptorGeneratorTests.Generator_AppliesDecorators"
+dotnet test --filter "FullyQualifiedName~DecoWeaverGeneratorTests.Generator_AppliesDecorators"
 
 # Run with verbose output
 dotnet test --logger "console;verbosity=detailed"
@@ -273,7 +273,7 @@ Test cases live in `/test/Cases/{NNN}_{Description}/`:
 [Theory]
 [GeneratorAutoData]
 public async Task Generator_HandlesMultipleDecorators(
-    SculptorGenerator generator,
+    DecoWeaverGenerator generator,
     string[] casePaths)
 {
     var sources = await GeneratorTestHelpers.RunFromCases(generator, casePaths);
@@ -326,7 +326,7 @@ Maintainers handle releases:
 
 - **GitHub Issues**: Bug reports and feature requests
 - **GitHub Discussions**: Questions and community support
-- **Documentation**: https://layeredcraft.github.io/sculptor/
+- **Documentation**: https://layeredcraft.github.io/decoweaver/
 
 ## Recognition
 
@@ -334,4 +334,4 @@ Contributors are recognized in:
 - GitHub contributors page
 - Release notes for significant contributions
 
-Thank you for contributing to Sculptor!
+Thank you for contributing to DecoWeaver!

@@ -9,7 +9,7 @@ jobs:
   build:
     uses: LayeredCraft/devops-templates/.github/workflows/pr-build.yaml@v6.2
     with:
-      solution: LayeredCraft.Sculptor.slnx
+      solution: LayeredCraft.DecoWeaver.slnx
       hasTests: true
       useMtpRunner: true
       testDirectory: "test"

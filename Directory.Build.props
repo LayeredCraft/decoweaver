@@ -1,18 +1,17 @@
 <Project>
     <PropertyGroup>
-        <VersionPrefix>0.1.0-alpha</VersionPrefix>
+        <VersionPrefix>1.0.0-beta</VersionPrefix>
         <!-- SPDX license identifier for MIT -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
         <!-- Other useful metadata -->
-        <RepositoryUrl>https://github.com/LayeredCraft/sculptor</RepositoryUrl>
+        <RepositoryUrl>https://github.com/layeredcraft/decoweaver</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <Authors>Nick Cipollina</Authors>
-        <PackageProjectUrl>https://github.com/LayeredCraft/sculptor</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/layeredcraft/decoweaver</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <!-- NuGet.org specific -->
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <IncludeSymbols>true</IncludeSymbols>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>

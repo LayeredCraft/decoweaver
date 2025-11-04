@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Sculptor will be documented in this file.
+All notable changes to DecoWeaver will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release of Sculptor
+- Initial release of DecoWeaver
 - Compile-time decorator registration using C# interceptors
 - Support for `[DecoratedBy<T>]` generic attribute
 - Support for `[DecoratedBy(typeof(T))]` non-generic attribute
@@ -70,7 +70,7 @@ If you were using a pre-release version:
 
 ## Breaking Changes Policy
 
-Sculptor follows semantic versioning:
+DecoWeaver follows semantic versioning:
 
 - **Major version** (x.0.0): Breaking changes, major features
 - **Minor version** (1.x.0): New features, backwards compatible
@@ -94,7 +94,7 @@ Features marked for deprecation:
 Planned features for future releases:
 
 ### Under Consideration
-- Assembly-level `[DecorateService]` attribute (See [Issue #2](https://github.com/LayeredCraft/sculptor/issues/2))
+- Assembly-level `[DecorateService]` attribute (See [Issue #2](https://github.com/layeredcraft/decoweaver/issues/2))
 - Decorator composition helpers
 - Performance profiling decorators
 - Additional diagnostic analyzers
@@ -105,7 +105,7 @@ Planned features for future releases:
 - Enhanced IDE tooling support
 - More example patterns
 
-See the [GitHub Issues](https://github.com/LayeredCraft/sculptor/issues) page for active discussions.
+See the [GitHub Issues](https://github.com/layeredcraft/decoweaver/issues) page for active discussions.
 
 ## How to Stay Updated
 
@@ -117,7 +117,7 @@ See the [GitHub Issues](https://github.com/LayeredCraft/sculptor/issues) page fo
 
 Found a bug or have a feature request? Please:
 
-1. Check existing [GitHub Issues](https://github.com/LayeredCraft/sculptor/issues)
+1. Check existing [GitHub Issues](https://github.com/layeredcraft/decoweaver/issues)
 2. Create a new issue with detailed description
 3. Include code samples and environment details
 

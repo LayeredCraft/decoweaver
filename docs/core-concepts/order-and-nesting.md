@@ -1,6 +1,6 @@
 # Order and Nesting
 
-When you apply multiple decorators to a service, the order in which they wrap each other is critical. Sculptor gives you explicit control over decorator ordering.
+When you apply multiple decorators to a service, the order in which they wrap each other is critical. DecoWeaver gives you explicit control over decorator ordering.
 
 ## Understanding Decorator Order
 

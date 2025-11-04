@@ -1,6 +1,6 @@
 # The Decorator Pattern
 
-The decorator pattern is a structural design pattern that allows you to add behavior to objects dynamically by wrapping them. Sculptor brings this pattern to .NET dependency injection at compile time.
+The decorator pattern is a structural design pattern that allows you to add behavior to objects dynamically by wrapping them. DecoWeaver brings this pattern to .NET dependency injection at compile time.
 
 ## What is a Decorator?
 
@@ -248,7 +248,7 @@ Use decorators when behavior is specific to a service type.
 - **AOP**: Aspect-oriented programming with interceptors at runtime
 - **Decorators**: Explicit, compile-time wrapping
 
-Decorators are more explicit and have zero runtime overhead with Sculptor.
+Decorators are more explicit and have zero runtime overhead with DecoWeaver.
 
 ### Decorators vs Base Classes
 

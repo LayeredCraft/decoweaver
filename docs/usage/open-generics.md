@@ -1,6 +1,6 @@
 # Open Generic Support
 
-Sculptor provides full support for decorating open generic types like `IRepository<T>`, making it easy to apply cross-cutting concerns to generic service patterns.
+DecoWeaver provides full support for decorating open generic types like `IRepository<T>`, making it easy to apply cross-cutting concerns to generic service patterns.
 
 ## What are Open Generics?
 
@@ -84,7 +84,7 @@ Register open generics using `typeof()`:
 ```csharp
 services.AddMemoryCache();
 
-// Sculptor intercepts and applies decorators automatically
+// DecoWeaver intercepts and applies decorators automatically
 services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // All closed generic instances are decorated
@@ -125,7 +125,7 @@ public class CachingRepository<T> : IRepository<T>
 
 ## Multiple Type Parameters
 
-Sculptor supports multiple type parameters:
+DecoWeaver supports multiple type parameters:
 
 ```csharp
 public interface IKeyValueStore<TKey, TValue>
@@ -164,7 +164,7 @@ services.AddScoped(
 
 ## Nested Generic Types
 
-Sculptor handles nested generic types:
+DecoWeaver handles nested generic types:
 
 ```csharp
 public interface IRepository<T> where T : class
@@ -341,7 +341,7 @@ public class Product : IEntity { }
 
 ## How It Works
 
-For open generic decorators, Sculptor generates interceptors that:
+For open generic decorators, DecoWeaver generates interceptors that:
 
 1. **Detect open generic registration**:
    ```csharp
@@ -515,7 +515,7 @@ public class Repository<T> : IRepository<T> where T : class { }
 
 ### No Partially Closed Generics
 
-Sculptor doesn't support partially closing generic types:
+DecoWeaver doesn't support partially closing generic types:
 
 ```csharp
 // ❌ Not supported: Partially closed generic
@@ -531,7 +531,7 @@ public class StringKeyValueStore<TValue> { }
 
 ### Closed Generic Registration Required
 
-Sculptor requires closed generic registration, not open generic registration of the decorator itself:
+DecoWeaver requires closed generic registration, not open generic registration of the decorator itself:
 
 ```csharp
 // ❌ This won't work:

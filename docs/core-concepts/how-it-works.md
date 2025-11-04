@@ -1,20 +1,20 @@
 # How It Works
 
-Sculptor uses compile-time code generation to automatically apply the decorator pattern to your dependency injection registrations. This page explains the technical approach and pipeline.
+DecoWeaver uses compile-time code generation to automatically apply the decorator pattern to your dependency injection registrations. This page explains the technical approach and pipeline.
 
 ## Overview
 
-Traditional decorator registration requires manual factory functions that resolve dependencies and wrap them. Sculptor automates this entirely at build time using three key technologies:
+Traditional decorator registration requires manual factory functions that resolve dependencies and wrap them. DecoWeaver automates this entirely at build time using three key technologies:
 
 1. **Incremental Source Generators** - Analyze your code during compilation
 2. **C# Interceptors** - Rewrite DI registration calls at compile time
 3. **Keyed Services** - Prevent circular dependencies when resolving decorators
 
-## The Sculptor Pipeline
+## The DecoWeaver Pipeline
 
 ### Phase 1: Discovery
 
-During compilation, Sculptor's source generator scans your code for:
+During compilation, DecoWeaver's source generator scans your code for:
 
 **Decorated Implementations**:
 ```csharp
@@ -33,7 +33,7 @@ The generator uses two parallel discovery streams:
 
 ### Phase 2: Analysis
 
-For each decorated implementation, Sculptor:
+For each decorated implementation, DecoWeaver:
 
 1. **Validates** the decorator type implements the same interface
 2. **Checks** that decorators accept the interface as a constructor parameter
@@ -42,7 +42,7 @@ For each decorated implementation, Sculptor:
 
 ### Phase 3: Code Generation
 
-Sculptor generates **interceptor methods** that rewrite your DI calls:
+DecoWeaver generates **interceptor methods** that rewrite your DI calls:
 
 **Your Code**:
 ```csharp
@@ -51,7 +51,7 @@ services.AddScoped<IUserRepository, UserRepository>();
 
 **Generated Interceptor**:
 ```csharp
-file static class SculptorInterceptors
+file static class DecoWeaverInterceptors
 {
     [InterceptsLocation(version: 1, data: "Program.cs|123|45")]
     public static IServiceCollection AddScoped_IUserRepository_UserRepository(
@@ -76,7 +76,7 @@ The `[InterceptsLocation]` attribute tells the C# compiler to redirect your orig
 
 ## Keyed Services Strategy
 
-Sculptor uses .NET 8's keyed services feature to avoid circular dependencies:
+DecoWeaver uses .NET 8's keyed services feature to avoid circular dependencies:
 
 ```csharp
 // 1. Register undecorated implementation with a unique key
@@ -96,7 +96,7 @@ This prevents the container from trying to resolve `IUserRepository` recursively
 
 ## Multiple Decorators
 
-When you stack decorators, Sculptor applies them in order:
+When you stack decorators, DecoWeaver applies them in order:
 
 ```csharp
 [DecoratedBy<LoggingRepository>(Order = 1)]
@@ -123,7 +123,7 @@ The result: `CachingRepository` → `LoggingRepository` → `UserRepository`
 
 ## Open Generic Support
 
-For open generic registrations, Sculptor generates interceptors that handle runtime type closing:
+For open generic registrations, DecoWeaver generates interceptors that handle runtime type closing:
 
 **Your Code**:
 ```csharp
@@ -152,7 +152,7 @@ services.AddScoped(typeof(IRepository<>), (sp, serviceType) =>
 
 ## Incremental Generation
 
-Sculptor uses incremental source generation for performance:
+DecoWeaver uses incremental source generation for performance:
 
 - **Syntax Predicates**: Fast checks without semantic analysis
 - **Semantic Transformers**: Only run on candidate nodes

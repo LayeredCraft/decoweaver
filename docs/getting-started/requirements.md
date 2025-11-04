@@ -2,7 +2,7 @@
 
 ## .NET SDK
 
-Sculptor requires:
+DecoWeaver requires:
 
 - **.NET SDK 8.0.400+** for C# 11 language support and interceptor features
 - **C# 11** or later (set via `<LangVersion>11</LangVersion>` or `<LangVersion>latest</LangVersion>`)
@@ -16,11 +16,11 @@ Sculptor requires:
 - **Microsoft.Extensions.DependencyInjection 8.0+**
 
 !!! info "Why .NET 8+?"
-    Sculptor uses .NET 8's keyed services feature to prevent circular dependencies when applying decorators. This is essential for the decorator pattern to work correctly with dependency injection.
+    DecoWeaver uses .NET 8's keyed services feature to prevent circular dependencies when applying decorators. This is essential for the decorator pattern to work correctly with dependency injection.
 
 ## C# Language Features
 
-Sculptor relies on these C# features:
+DecoWeaver relies on these C# features:
 
 - **Interceptors** (C# 11, experimental) - Rewrites DI registration calls at compile time
 - **File-scoped types** (C# 11) - Prevents namespace pollution in generated code
@@ -79,5 +79,5 @@ cat MyProject.csproj | grep LangVersion
 
 ## Next Steps
 
-- Install Sculptor via [Installation Guide](installation.md)
+- Install DecoWeaver via [Installation Guide](installation.md)
 - Create your first decorator with [Quick Start](quick-start.md)

@@ -1,7 +1,0 @@
-<Project>
-    <PropertyGroup>
-        <!-- Ensure both properties get our namespace; some SDKs gate on either -->
-        <InterceptorsNamespaces>$(InterceptorsNamespaces);Sculptor.Generated</InterceptorsNamespaces>
-        <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Sculptor.Generated</InterceptorsPreviewNamespaces>
-    </PropertyGroup>
-</Project>

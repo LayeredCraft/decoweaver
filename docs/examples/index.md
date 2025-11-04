@@ -1,6 +1,6 @@
 # Examples
 
-This section provides real-world examples of using Sculptor to apply the decorator pattern in different scenarios.
+This section provides real-world examples of using DecoWeaver to apply the decorator pattern in different scenarios.
 
 ## Available Examples
 
@@ -65,7 +65,7 @@ Here's a complete example showing multiple decorators working together:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using Sculptor.Attributes;
+using DecoWeaver.Attributes;
 
 // Service interface
 public interface IOrderService
@@ -338,7 +338,7 @@ All examples are runnable with minimal setup:
 
 ## Contributing Examples
 
-Have a great Sculptor example? We'd love to include it! See the [Contributing Guide](../contributing.md) for how to submit examples.
+Have a great DecoWeaver example? We'd love to include it! See the [Contributing Guide](../contributing.md) for how to submit examples.
 
 ## Next Steps
 

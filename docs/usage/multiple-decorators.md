@@ -1,6 +1,6 @@
 # Multiple Decorators
 
-Sculptor allows you to apply multiple decorators to a single implementation, creating a chain of decorators that wrap each other. This is useful for composing cross-cutting concerns like logging, caching, metrics, and resilience.
+DecoWeaver allows you to apply multiple decorators to a single implementation, creating a chain of decorators that wrap each other. This is useful for composing cross-cutting concerns like logging, caching, metrics, and resilience.
 
 ## Applying Multiple Decorators
 
@@ -477,7 +477,7 @@ services.AddLogging();
 If you get circular dependency errors:
 
 - Ensure decorators don't depend on the service they're decorating
-- Check that Sculptor is using keyed services correctly
+- Check that DecoWeaver is using keyed services correctly
 - Verify .NET 8+ runtime for keyed services support
 
 ## Next Steps

@@ -1,11 +1,11 @@
 # Quick Start
 
-Get started with Sculptor in 5 minutes by creating a simple logging decorator.
+Get started with DecoWeaver in 5 minutes by creating a simple logging decorator.
 
-## Step 1: Install Sculptor
+## Step 1: Install DecoWeaver
 
 ```bash
-dotnet add package Sculptor
+dotnet add package DecoWeaver
 ```
 
 ## Step 2: Create Your Service
@@ -71,7 +71,7 @@ public class LoggingUserService : IUserService
 Add the `[DecoratedBy]` attribute to your implementation:
 
 ```csharp
-using Sculptor.Attributes;
+using DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingUserService>]
 public class UserService : IUserService
@@ -82,7 +82,7 @@ public class UserService : IUserService
 
 ## Step 5: Register in DI
 
-Register your service normally - Sculptor handles the decoration automatically:
+Register your service normally - DecoWeaver handles the decoration automatically:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -92,7 +92,7 @@ var services = new ServiceCollection();
 // Add logging
 services.AddLogging();
 
-// Register your service - Sculptor automatically applies the decorator
+// Register your service - DecoWeaver automatically applies the decorator
 services.AddScoped<IUserService, UserService>();
 
 // Build and resolve
@@ -107,7 +107,7 @@ await userService.GetByIdAsync(123);
 
 ## What Just Happened?
 
-1. **Build Time**: Sculptor's source generator detected the `[DecoratedBy]` attribute
+1. **Build Time**: DecoWeaver's source generator detected the `[DecoratedBy]` attribute
 2. **Code Generation**: Generated an interceptor that rewrites the `AddScoped` call
 3. **Runtime**: Your service is automatically wrapped with the logging decorator
 
@@ -115,7 +115,7 @@ await userService.GetByIdAsync(123);
 
 To see the generated interceptor code:
 
-**Visual Studio**: Solution Explorer → Show All Files → obj/Debug/net8.0/generated/Sculptor/
+**Visual Studio**: Solution Explorer → Show All Files → obj/Debug/net8.0/generated/DecoWeaver/
 
 **Rider**: Solution Explorer → Generated Files node
 

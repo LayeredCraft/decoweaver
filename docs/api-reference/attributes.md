@@ -1,6 +1,6 @@
 # Attributes API Reference
 
-Sculptor provides attributes for marking classes to be decorated. These attributes are compile-time only and have zero runtime footprint.
+DecoWeaver provides attributes for marking classes to be decorated. These attributes are compile-time only and have zero runtime footprint.
 
 ## DecoratedByAttribute<T>
 
@@ -42,7 +42,7 @@ public class UserRepository : IUserRepository { }
 #### Basic Usage
 
 ```csharp
-using Sculptor.Attributes;
+using DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingRepository>]
 public class UserRepository : IUserRepository
@@ -92,7 +92,7 @@ public class Repository<T> : IRepository<T> where T : class
 
 ### Compile-Time Behavior
 
-This attribute is marked with `[Conditional("SCULPTOR_EMIT_ATTRIBUTE_METADATA")]`, meaning:
+This attribute is marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA")]`, meaning:
 
 - The attribute does **not** exist in the compiled assembly
 - No runtime reflection is possible on this attribute
@@ -155,7 +155,7 @@ Controls the order in which multiple decorators are applied. Lower values are ap
 #### Basic Usage
 
 ```csharp
-using Sculptor.Attributes;
+using DecoWeaver.Attributes;
 
 [DecoratedBy(typeof(LoggingRepository))]
 public class UserRepository : IUserRepository

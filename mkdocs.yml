@@ -1,11 +1,11 @@
-site_name: Sculptor
+site_name: DecoWeaver
 site_description: Compile-time decorator registration for .NET dependency injection
-site_url: https://layeredcraft.github.io/sculptor/
+site_url: https://layeredcraft.github.io/decoweaver/
 site_author: Little Onion
 
 # Repository
-repo_name: LayeredCraft/sculptor
-repo_url: https://github.com/LayeredCraft/sculptor
+repo_name: layeredcraft/decoweaver
+repo_url: https://github.com/layeredcraft/decoweaver
 edit_uri: edit/main/docs/
 
 # Copyright
@@ -130,8 +130,8 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/LayeredCraft/sculptor
+      link: https://github.com/layeredcraft/decoweaver
       name: GitHub Repository
     - icon: fontawesome/solid/download
-      link: https://www.nuget.org/packages/Sculptor/
+      link: https://www.nuget.org/packages/DecoWeaver/
       name: NuGet Package

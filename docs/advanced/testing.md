@@ -1,6 +1,6 @@
 # Testing Strategies
 
-Testing services decorated with Sculptor follows standard .NET testing practices. This guide shows how to test decorators individually and in combination.
+Testing services decorated with DecoWeaver follows standard .NET testing practices. This guide shows how to test decorators individually and in combination.
 
 ## Testing Philosophy
 
@@ -409,7 +409,7 @@ public class GeneratorTests
             public class UserRepository : IUserRepository { }
         ";
 
-        var generator = new SculptorGenerator();
+        var generator = new DecoWeaverGenerator();
 
         // Act
         var result = RunGenerator(source, generator);

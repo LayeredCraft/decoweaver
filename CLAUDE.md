@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-LayeredCraft.Sculptor is a .NET incremental source generator that enables **compile-time decorator registration** for dependency injection. It uses C# 11+ interceptors to automatically wrap service implementations with decorators at build time, eliminating runtime reflection and assembly scanning.
+LayeredCraft.DecoWeaver is a .NET incremental source generator that enables **compile-time decorator registration** for dependency injection. It uses C# 11+ interceptors to automatically wrap service implementations with decorators at build time, eliminating runtime reflection and assembly scanning.
 
 ## Build Commands
 
@@ -32,21 +32,21 @@ dotnet clean
 
 The solution contains four main projects:
 
-1. **src/LayeredCraft.Sculptor.Attributes** (netstandard2.0)
+1. **src/LayeredCraft.DecoWeaver.Attributes** (netstandard2.0)
    - Defines `[DecoratedBy<T>]` and `[DecoratedBy(typeof(...))]` attributes
    - Consumer-facing API with minimal dependencies
    - Uses Polyfill for modern C# features on older targets
 
-2. **src/LayeredCraft.Sculptor.Generators** (netstandard2.0)
+2. **src/LayeredCraft.DecoWeaver.Generators** (netstandard2.0)
    - The incremental source generator implementation
    - Depends on Microsoft.CodeAnalysis.CSharp 4.14.0
-   - Emits interceptor code to `Sculptor.Interceptors.OpenGenerics.g.cs`
+   - Emits interceptor code to `DecoWeaver.Interceptors.ClosedGenerics.g.cs`
 
-3. **samples/Sculptor.Sample** (net10.0)
+3. **samples/DecoWeaver.Sample** (net10.0)
    - Demonstrates open generic decorator registration
    - References both Attributes and Generators projects
 
-4. **test/LayeredCraft.Sculptor.Genrator.Tests** (net8.0)
+4. **test/LayeredCraft.DecoWeaver.Generator.Tests** (net8.0)
    - XUnit v3 tests with snapshot verification infrastructure
    - Uses AutoFixture + NSubstitute for test data/mocking
    - Multi-framework BCL reference assemblies for accurate compilation testing
@@ -124,9 +124,9 @@ Tests live in `/test/Cases/{NNN}_{Description}/` directories:
 
 ### Working on Generator Code
 
-1. Modify files in `/src/LayeredCraft.Sculptor.Generators/`
+1. Modify files in `/src/LayeredCraft.DecoWeaver.Generators/`
 2. Key files to understand:
-   - `SculptorGenerator.cs`: Main pipeline orchestration
+   - `DecoWeaverGenerator.cs`: Main pipeline orchestration
    - `Providers/`: Syntax/semantic analysis for discovery
    - `Emit/InterceptorEmitter.cs`: Code generation logic
    - `Model/`: Data structures passed through pipeline
@@ -173,7 +173,7 @@ Tests live in `/test/Cases/{NNN}_{Description}/` directories:
 
 ### Attribute Compilation
 
-- Attributes marked with `[Conditional("SCULPTOR_EMIT_ATTRIBUTE_METADATA")]`
+- Attributes marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA")]`
 - Don't exist at runtime - zero metadata footprint
 - Only affect compile-time behavior
 
@@ -186,7 +186,7 @@ Tests live in `/test/Cases/{NNN}_{Description}/` directories:
 
 ## Naming Conventions
 
-- Diagnostics: `SCULPT###` prefix
+- Diagnostics: `DECOW###` prefix
 - Tracking names: `Category_Subcategory_Action` format
 - Type identity: `TypeDefId` (definition), `TypeId` (with args)
 - Error handling: Return `null` from transformers on invalid input
