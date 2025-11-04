@@ -1,6 +1,6 @@
 namespace Sculptor;
 
-internal static class Attributes
+internal static class AttributeNames
 {
     public const string DecoratedByAttribute = "Sculptor.Attributes.DecoratedByAttribute";
     public const string GenericDecoratedByAttribute = "Sculptor.Attributes.DecoratedByAttribute`1";

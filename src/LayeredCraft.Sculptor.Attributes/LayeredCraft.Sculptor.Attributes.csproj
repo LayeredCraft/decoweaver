@@ -8,6 +8,7 @@
         <PackageId>Sculptor.Attributes</PackageId>
         <AssemblyName>$(PackageId)</AssemblyName>
         <RootNamespace>$(PackageId)</RootNamespace>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Polyfill" Version="8.9.0">

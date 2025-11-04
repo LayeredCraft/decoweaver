@@ -2,10 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsPackable>true</IsPackable>
         <ImplicitUsings>true</ImplicitUsings>
         <PackageId>Sculptor</PackageId>
@@ -14,15 +12,7 @@
         <Title>$(PackageId)</Title>
         <Description>Sculptor is a .NET incremental source generator that enables compile-time decorator registration using C# 11+ interceptors. Zero runtime overhead, type-safe decorator chains, and full open generic support for .NET dependency injection.</Description>
         <PackageTags>source-generator;roslyn;dependency-injection;decorator-pattern;interceptors;compile-time;aop;di;ioc;dotnet</PackageTags>
-        <PackageIcon>icon.png</PackageIcon>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <IsPackable>true</IsPackable>
     </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="..\..\icon.png" Pack="true" PackagePath="" Visible="False" />
-        <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="False" />
-    </ItemGroup>
     
     <ItemGroup>
         <!-- Keep Roslyn deps private so they don't leak to consumers -->
@@ -32,16 +22,21 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\LayeredCraft.Sculptor.Attributes\LayeredCraft.Sculptor.Attributes.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\LayeredCraft.Sculptor.Attributes\LayeredCraft.Sculptor.Attributes.csproj" PrivateAssets="All" />
     </ItemGroup>
 
     <!-- Optional: write generated files locally while debugging this project itself -->
     <PropertyGroup Condition="'$(Configuration)'=='Debug'">
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>$(IntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
+
+    <!-- Pack this generator DLL as an analyzer so consumers pick it up automatically -->
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="..\LayeredCraft.Sculptor.Attributes\bin\$(Configuration)\netstandard2.0\Sculptor.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="..\LayeredCraft.Sculptor.Attributes\bin\$(Configuration)\netstandard2.0\Sculptor.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="true" />
+        <None Include="..\LayeredCraft.Sculptor.Attributes\bin\$(Configuration)\netstandard2.0\Sculptor.Attributes.xml" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
+        <None Include="Sculptor.props" Pack="true" PackagePath="build" />
+    </ItemGroup>
 
 </Project>

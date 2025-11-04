@@ -9,14 +9,32 @@
         <RepositoryType>git</RepositoryType>
         <Authors>Nick Cipollina</Authors>
         <PackageProjectUrl>https://github.com/LayeredCraft/sculptor</PackageProjectUrl>
-
+        <PackageIcon>icon.png</PackageIcon>
         <!-- NuGet.org specific -->
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
     </PropertyGroup>
+    
+    <PropertyGroup>
+        <DebugType>embedded</DebugType>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <LangVersion>latest</LangVersion>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="..\..\icon.png" Pack="true" PackagePath="" Visible="False" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="False" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">

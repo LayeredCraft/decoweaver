@@ -32,7 +32,7 @@ public sealed class SculptorGenerator : IIncrementalGenerator
         // Use ForAttributeWithMetadataName to handle multiple [DecoratedBy<T>] attributes on the same class
         var genericDecorations = context.SyntaxProvider
             .ForAttributeWithMetadataName(
-                Attributes.GenericDecoratedByAttribute,
+                AttributeNames.GenericDecoratedByAttribute,
                 predicate: DecoratedByGenericProvider.Predicate,
                 transform: DecoratedByGenericProvider.TransformMultiple)
             .SelectMany(static (decorators, _) => decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
