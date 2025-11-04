@@ -51,6 +51,11 @@ internal static class ClosedGenericRegistrationProvider
         // Use the original symbol (not OriginalDefinition) to get the constructed type arguments
         if (!symbol.IsGenericMethod || symbol.TypeArguments.Length != 2) return null;
 
+        // Only match the parameterless overload: AddScoped<T1, T2>(this IServiceCollection services)
+        // Reject factory delegates, keyed services, or instance registrations
+        // symbolToCheck is the unreduced (static extension) form, so it has IServiceCollection as first parameter
+        if (symbolToCheck.Parameters.Length != 1) return null;
+
         var svc = symbol.TypeArguments[0];
         var impl = symbol.TypeArguments[1];
 

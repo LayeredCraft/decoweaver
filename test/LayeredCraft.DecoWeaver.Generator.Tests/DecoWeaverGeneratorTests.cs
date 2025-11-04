@@ -1,5 +1,4 @@
 using DecoWeaver;
-using DecoWeaver;
 using LayeredCraft.DecoWeaver.Generator.Tests.TestKit.Attributes;
 
 namespace LayeredCraft.DecoWeaver.Generator.Tests;
@@ -260,6 +259,20 @@ public class DecoWeaverGeneratorTests
             [
                 "Cases/021_Singleton_Generic_MultipleDecorators/Repository.cs",
                 "Cases/021_Singleton_Generic_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_ShouldNotIntercept(DecoWeaverGenerator sut)
+    {
+        // This test verifies that registrations with factory delegates are NOT intercepted
+        // Only the parameterless overload AddScoped<T1, T2>() should be intercepted
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/022_FactoryDelegate_ShouldNotIntercept/Repository.cs",
+                "Cases/022_FactoryDelegate_ShouldNotIntercept/Program.cs"
             ],
             featureFlags: FeatureFlags);
     }

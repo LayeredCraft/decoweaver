@@ -8,17 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- No changes yet
+
+## [1.0.0-beta]
+
+### Added
 - Initial release of DecoWeaver
 - Compile-time decorator registration using C# interceptors
 - Support for `[DecoratedBy<T>]` generic attribute
 - Support for `[DecoratedBy(typeof(T))]` non-generic attribute
 - Multiple decorator support with ordering via `Order` property
-- Open generic decorator support (`IRepository<T>`)
+- Closed generic support for specific instantiations like `IRepository<Customer>`
+- Open generic decorators (e.g., `CachingRepository<>`) that are closed at runtime
 - Incremental source generation for performance
 - Zero runtime overhead with compile-time code generation
 - Keyed services integration for circular dependency prevention
-- Comprehensive documentation site
-- Sample projects demonstrating usage
+- Comprehensive documentation site with MkDocs Material
+- Sample projects demonstrating usage patterns
+- Complete test suite with 21 test cases and snapshot verification
 
 ### Technical Details
 - Targets .NET 8.0+ runtime (for keyed services)
@@ -26,12 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Requires C# 11+ language version
 - Source generator built on Roslyn 4.14.0
 - Attributes target netstandard2.0 for compatibility
+- Uses XUnit v3 for testing with AutoFixture and NSubstitute
 
 ## Release Notes Format
 
 Future releases will follow this format:
 
-### [Version] - YYYY-MM-DD
+### [Version]
 
 #### Added
 - New features
@@ -53,14 +61,15 @@ Future releases will follow this format:
 
 ## Upgrade Guides
 
-### From Pre-Release to 1.0.0
+### From Beta to 1.0.0
 
-If you were using a pre-release version:
+When upgrading from beta to the production 1.0.0 release:
 
 1. Update package reference to 1.0.0
 2. Ensure .NET SDK 8.0.400+ is installed
 3. Set `<LangVersion>11</LangVersion>` in project file
 4. Rebuild solution to regenerate interceptors
+5. Review changelog for any breaking changes
 
 ## Version Support
 

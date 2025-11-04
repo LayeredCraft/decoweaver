@@ -79,21 +79,58 @@ public class Repository<T> : IRepository<T> where T : class
 
 ## Registration
 
-Register open generics using `typeof()`:
+DecoWeaver requires **closed generic registrations** (specific type instantiations):
 
 ```csharp
 services.AddMemoryCache();
 
-// DecoWeaver intercepts and applies decorators automatically
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// DecoWeaver intercepts closed generic registrations
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 
-// All closed generic instances are decorated
+// Each instance gets its own decorated version
 var userRepo = provider.GetRequiredService<IRepository<User>>();
 // Returns: CachingRepository<User> wrapping Repository<User>
 
 var productRepo = provider.GetRequiredService<IRepository<Product>>();
 // Returns: CachingRepository<Product> wrapping Repository<Product>
 ```
+
+### Supported Registration Signatures
+
+✅ **Supported - Parameterless Registration:**
+```csharp
+services.AddScoped<IRepository<Customer>, SqlRepository<Customer>>();
+services.AddTransient<ICommand<CreateOrder>, CreateOrderCommand>();
+services.AddSingleton<ICache<string>, MemoryCache<string>>();
+```
+
+❌ **Not Supported - Open Generic Registration:**
+```csharp
+// This will NOT intercept decorators
+services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+```
+
+❌ **Not Supported - Factory Delegates:**
+```csharp
+// Decorators will NOT be applied
+services.AddScoped<IRepository<User>, Repository<User>>(sp =>
+    new Repository<User>(sp.GetRequiredService<ILogger>()));
+```
+
+❌ **Not Supported - Keyed Services:**
+```csharp
+// Decorators will NOT be applied
+services.AddScoped<IRepository<User>, Repository<User>>("primary");
+```
+
+❌ **Not Supported - Instance Registration:**
+```csharp
+// Decorators will NOT be applied
+services.AddScoped<IRepository<User>>(new Repository<User>());
+```
+
+> **Note**: Support for factory delegates and other registration patterns is tracked in [Issue #3](https://github.com/layeredcraft/decoweaver/issues/3). For now, use the parameterless registration and inject dependencies through the constructor.
 
 ## Type Constraints
 
