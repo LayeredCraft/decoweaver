@@ -14,19 +14,15 @@ internal static class DecoratedByNonGenericProvider
     /// Processes all [DecoratedBy] attributes on a class, yielding one DecoratorToIntercept per attribute.
     /// This allows multiple decorators to be applied to the same implementation.
     /// </summary>
-    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorSyntaxContext ctx, CancellationToken ct)
+    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        if (ctx.Node is not ClassDeclarationSyntax classSyntax)
+        if (ctx.TargetSymbol is not INamedTypeSymbol implDef)
             yield break;
 
-        var symbol = ctx.SemanticModel.GetDeclaredSymbol(classSyntax, ct);
-        if (symbol is not INamedTypeSymbol implDef)
-            yield break;
-
-        // Get all [DecoratedBy] attributes on this class
-        foreach (var attr in implDef.GetAttributes())
+        // Process all [DecoratedBy(typeof(...))] attributes on this class
+        foreach (var attr in ctx.Attributes)
         {
             // Only process DecoratedByAttribute (non-generic version) with pattern matching for namespace
             if (attr.AttributeClass is not
@@ -60,7 +56,7 @@ internal static class DecoratedByNonGenericProvider
                 DecoratorDef: decoratorSym.ToTypeId().Definition,
                 Order: order,
                 IsInterceptable: true,
-                Location: classSyntax.ToLocationId());
+                Location: ctx.TargetNode.ToLocationId());
         }
     }
 }
