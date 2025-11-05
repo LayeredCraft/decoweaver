@@ -3,7 +3,7 @@
 **Compile-time decorator registration for .NET dependency injection**
 
 [![NuGet](https://img.shields.io/nuget/v/DecoWeaver.svg)](https://www.nuget.org/packages/DecoWeaver/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/layeredcraft/decoweaver/build.yml?branch=main)](https://github.com/layeredcraft/decoweaver/actions)
+[![Build Status](https://github.com/LayeredCraft/decoweaver/actions/workflows/build.yaml/badge.svg)](https://github.com/LayeredCraft/decoweaver/actions/workflows/build.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://layeredcraft.github.io/decoweaver/)
 
