@@ -21,7 +21,7 @@ internal static class DecoratedByNonGenericProvider
         if (ctx.TargetSymbol is not INamedTypeSymbol implDef)
             yield break;
 
-        // Process all [DecoratedBy(typeof(...))] attributes on this class
+        // Process all [DecoratedBy] attributes on this class (pre-filtered by ForAttributeWithMetadataName)
         foreach (var attr in ctx.Attributes)
         {
             // Only process DecoratedByAttribute (non-generic version) with pattern matching for namespace
