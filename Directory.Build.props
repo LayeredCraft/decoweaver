@@ -1,0 +1,49 @@
+<Project>
+    <!-- Import release notes -->
+    <Import Project="releasenotes.props" />
+
+    <PropertyGroup>
+        <VersionPrefix>1.0.0-beta</VersionPrefix>
+        <!-- SPDX license identifier for MIT -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <!-- Other useful metadata -->
+        <RepositoryUrl>https://github.com/layeredcraft/decoweaver</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <Authors>Nick Cipollina</Authors>
+        <PackageProjectUrl>https://github.com/layeredcraft/decoweaver</PackageProjectUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <!-- NuGet.org specific -->
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <DebugType>embedded</DebugType>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <LangVersion>latest</LangVersion>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="..\..\icon.png" Pack="true" PackagePath="" Visible="False" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="False" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>
+

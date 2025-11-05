@@ -1,0 +1,137 @@
+site_name: DecoWeaver
+site_description: Compile-time decorator registration for .NET dependency injection
+site_url: https://layeredcraft.github.io/decoweaver/
+site_author: Little Onion
+
+# Repository
+repo_name: layeredcraft/decoweaver
+repo_url: https://github.com/layeredcraft/decoweaver
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 Little Onion
+
+# Configuration
+theme:
+  name: material
+  language: en
+  logo: assets/icon.png
+  favicon: assets/icon.png
+
+  features:
+    - content.code.copy
+    - content.code.select
+    - navigation.expand
+    - navigation.footer
+    - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+
+  # Dark/Light mode toggle
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Requirements: getting-started/requirements.md
+    - Quick Start: getting-started/quick-start.md
+  - Core Concepts:
+    - How It Works: core-concepts/how-it-works.md
+    - Decorator Pattern: core-concepts/decorator-pattern.md
+    - Order & Nesting: core-concepts/order-and-nesting.md
+  - Usage:
+    - Class-Level Decorators: usage/class-level-decorators.md
+    - Open Generics: usage/open-generics.md
+    - Multiple Decorators: usage/multiple-decorators.md
+    - Opt-Out: usage/opt-out.md
+  - Examples: examples/index.md
+  - Advanced:
+    - Interceptors: advanced/interceptors.md
+    - Keyed Services: advanced/keyed-services.md
+    - Performance: advanced/performance.md
+    - Troubleshooting: advanced/troubleshooting.md
+  - API Reference:
+    - Attributes: api-reference/attributes.md
+    - Generated Code: api-reference/generated-code.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+# Social links
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/layeredcraft/decoweaver
+      name: GitHub Repository
+    - icon: fontawesome/solid/download
+      link: https://www.nuget.org/packages/DecoWeaver/
+      name: NuGet Package

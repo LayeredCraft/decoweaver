@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <!-- Ensure both properties get our namespace; some SDKs gate on either -->
+        <InterceptorsNamespaces>$(InterceptorsNamespaces);DecoWeaver.Generated</InterceptorsNamespaces>
+        <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);DecoWeaver.Generated</InterceptorsPreviewNamespaces>
+    </PropertyGroup>
+</Project>

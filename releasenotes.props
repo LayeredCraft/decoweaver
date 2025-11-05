@@ -1,0 +1,45 @@
+<Project>
+  <PropertyGroup>
+    <PackageReleaseNotes Condition="'$(VersionPrefix)' == '1.0.0-beta'">
+      <![CDATA[
+## DecoWeaver 1.0.0-beta.* - Initial Beta Release
+
+This is the initial beta release of DecoWeaver, a .NET incremental source generator that enables compile-time decorator registration using C# 11+ interceptors.
+
+### Features
+
+* **Compile-time decorator registration** - Zero runtime reflection or assembly scanning
+* **Attribute-based decoration** - Support for both `[DecoratedBy<T>]` and `[DecoratedBy(typeof(...))]` attributes
+* **Closed generic support** - Works with specific instantiations like `IRepository<Customer>`
+* **Open generic decorators** - Decorator classes can be open generics (e.g., `CachingRepository<>`) that are closed at runtime
+* **Multiple decorators with ordering** - Stack multiple decorators with explicit order control via `Order` property
+* **Keyed services integration** - Uses .NET 8+ keyed services to prevent circular dependencies
+* **Incremental source generation** - Fast rebuilds with Roslyn's incremental generator infrastructure
+* **Type-safe interceptors** - Generated code uses C# 11+ interceptors to rewrite DI registrations at compile time
+
+### Requirements
+
+* **C# Language Version**: 11 or later (interceptors feature)
+* **.NET Runtime**: 8.0 or later (keyed services support)
+* **.NET SDK**: 8.0.400 or later (Visual Studio 2022 17.11+)
+
+### Documentation
+
+* Full documentation: https://layeredcraft.github.io/decoweaver/
+* Changelog: https://layeredcraft.github.io/decoweaver/changelog/
+* GitHub: https://github.com/layeredcraft/decoweaver
+* Report issues: https://github.com/layeredcraft/decoweaver/issues
+
+]]>
+    </PackageReleaseNotes>
+
+    <!-- Fallback for versions without specific release notes -->
+    <PackageReleaseNotes Condition="'$(PackageReleaseNotes)' == ''">
+      <![CDATA[
+See the full changelog at https://layeredcraft.github.io/decoweaver/changelog/
+
+Report issues: https://github.com/layeredcraft/decoweaver/issues
+]]>
+    </PackageReleaseNotes>
+  </PropertyGroup>
+</Project>

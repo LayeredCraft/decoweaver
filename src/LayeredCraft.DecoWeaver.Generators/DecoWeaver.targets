@@ -1,0 +1,10 @@
+<Project>
+    <Target Name="DecoWeaver_EnableInterceptors" BeforeTargets="CoreCompile">
+        <!-- Optional friendly check: your generator already has a language gate,
+             so leave errors commented unless you want a hard MSBuild failure.
+    
+        <Error Condition="'$(LangVersion)' == 'default'"
+               Text="DecoWeaver requires C# 11+ compiler. Set <LangVersion>latest</LangVersion> or a supported version." />
+        -->
+    </Target>
+</Project>
