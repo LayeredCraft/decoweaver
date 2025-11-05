@@ -7,6 +7,12 @@ namespace DecoWeaver.Providers;
 
 internal static class DecoratedByGenericProvider
 {
+    /// <summary>
+    /// Filters to classes only (AttributeTargets.Class). ForAttributeWithMetadataName passes all
+    /// node types that could have attributes, so we pre-filter here to avoid semantic analysis on
+    /// structs, interfaces, enums, etc. Decorator pattern requires reference semantics (classes/records),
+    /// not value types (structs/record structs).
+    /// </summary>
     internal static bool Predicate(SyntaxNode node, CancellationToken _)
         => node is ClassDeclarationSyntax;
 

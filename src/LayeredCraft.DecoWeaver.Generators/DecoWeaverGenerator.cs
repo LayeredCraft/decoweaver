@@ -42,11 +42,12 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .WithTrackingName(TrackingNames.Attr_Generic_Stream);
 
         // --- [DecoratedBy(typeof(...))] non-generic stream -------------------
-        // Use CreateSyntaxProvider to handle multiple [DecoratedBy] attributes on the same class
+        // Use ForAttributeWithMetadataName to handle multiple [DecoratedBy] attributes on the same class
         var nonGenericDecorations = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                predicate: static (node, ct) => DecoratedByNonGenericProvider.Predicate(node, ct),
-                transform: static (ctx, ct) => DecoratedByNonGenericProvider.TransformMultiple(ctx, ct))
+            .ForAttributeWithMetadataName(
+                AttributeNames.DecoratedByAttribute,
+                predicate: DecoratedByNonGenericProvider.Predicate,
+                transform: DecoratedByNonGenericProvider.TransformMultiple)
             .SelectMany(static (decorators, _) => decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
             .WithTrackingName(TrackingNames.Attr_NonGeneric_Transform)
             .Where(static x => x is not null)
