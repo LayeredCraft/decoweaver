@@ -5,7 +5,7 @@ Get started with DecoWeaver in 5 minutes by creating a simple logging decorator.
 ## Step 1: Install DecoWeaver
 
 ```bash
-dotnet add package DecoWeaver
+dotnet add package DecoWeaver --prerelease
 ```
 
 ## Step 2: Create Your Service
