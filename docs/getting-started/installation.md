@@ -5,19 +5,19 @@
 Install DecoWeaver via the .NET CLI:
 
 ```bash
-dotnet add package DecoWeaver
+dotnet add package DecoWeaver --prerelease
 ```
 
 Or via Package Manager Console in Visual Studio:
 
 ```powershell
-Install-Package DecoWeaver
+Install-Package DecoWeaver -Prerelease
 ```
 
 Or add directly to your `.csproj` file:
 
 ```xml
-<PackageReference Include="DecoWeaver" Version="1.0.0" />
+<PackageReference Include="DecoWeaver" Version="1.0.0-beta" />
 ```
 
 ## Package Contents

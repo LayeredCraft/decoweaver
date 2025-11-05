@@ -25,7 +25,7 @@ DecoWeaver is a .NET incremental source generator that brings **compile-time dec
 Install the NuGet package:
 
 ```bash
-dotnet add package DecoWeaver
+dotnet add package DecoWeaver --prerelease
 ```
 
 Ensure your project uses C# 11 or later:
@@ -96,7 +96,6 @@ Key sections:
 - [Core Concepts](https://layeredcraft.github.io/decoweaver/core-concepts/how-it-works/) - Understand how it works
 - [Usage Guide](https://layeredcraft.github.io/decoweaver/usage/class-level-decorators/) - Detailed usage patterns
 - [Examples](https://layeredcraft.github.io/decoweaver/examples/) - Real-world scenarios
-- [Troubleshooting](https://layeredcraft.github.io/decoweaver/advanced/troubleshooting/) - Common issues and solutions
 
 ## Contributing
 

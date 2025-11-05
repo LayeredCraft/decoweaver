@@ -81,8 +81,10 @@ We welcome pull requests for:
 5. **Run tests**
 
    ```bash
-   dotnet test
+   dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net8.0
    ```
+
+   Note: The test project uses Microsoft Testing Platform (MTP) and targets multiple frameworks, so you must specify the framework.
 
 ## Project Structure
 
@@ -180,7 +182,7 @@ public async Task Generator_AppliesDecorators_ForClassWithAttribute(
 1. **Ensure all tests pass**
 
    ```bash
-   dotnet test
+   dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net8.0
    ```
 
 2. **Build successfully**
@@ -249,15 +251,17 @@ refactor: simplify decorator resolution logic
 
 ### Running Tests
 
+The test project uses Microsoft Testing Platform (MTP) and targets multiple frameworks (net8.0, net9.0, net10.0), so you must specify the framework when running tests:
+
 ```bash
-# Run all tests
-dotnet test
+# Run all tests (net8.0)
+dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net8.0
 
-# Run specific test
-dotnet test --filter "FullyQualifiedName~DecoWeaverGeneratorTests.Generator_AppliesDecorators"
+# Run tests on net9.0
+dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net9.0
 
-# Run with verbose output
-dotnet test --logger "console;verbosity=detailed"
+# Run tests on net10.0
+dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net10.0
 ```
 
 ### Adding Test Cases

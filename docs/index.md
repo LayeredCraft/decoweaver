@@ -19,7 +19,7 @@
 ## Installation
 
 ```bash
-dotnet add package DecoWeaver
+dotnet add package DecoWeaver --prerelease
 ```
 
 ## Quick Start

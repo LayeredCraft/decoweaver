@@ -15,11 +15,12 @@ dotnet restore
 # Build the entire solution
 dotnet build
 
-# Run all tests
-dotnet test
+# Run all tests (requires framework specification for MTP)
+dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net8.0
 
-# Run tests with detailed output
-dotnet test --logger "console;verbosity=detailed"
+# Run tests on specific framework
+dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net9.0
+dotnet run --project test/LayeredCraft.DecoWeaver.Generator.Tests/LayeredCraft.DecoWeaver.Generator.Tests.csproj --framework net10.0
 
 # Build in release mode
 dotnet build -c Release
@@ -27,6 +28,8 @@ dotnet build -c Release
 # Clean build artifacts
 dotnet clean
 ```
+
+**Note**: The test project uses Microsoft Testing Platform (MTP) and targets multiple frameworks (net8.0, net9.0, net10.0), so you must specify the `--framework` flag when running tests.
 
 ## Project Structure
 
