@@ -28,8 +28,16 @@ internal static class DecoratedByNonGenericProvider
         // Get all [DecoratedBy] attributes on this class
         foreach (var attr in implDef.GetAttributes())
         {
-            // Only process DecoratedByAttribute (non-generic version)
-            if (attr.AttributeClass?.ToDisplayString() != AttributeNames.DecoratedByAttribute)
+            // Only process DecoratedByAttribute (non-generic version) with pattern matching for namespace
+            if (attr.AttributeClass is not
+                {
+                    MetadataName: AttributeNames.DecoratedByMetadataName,
+                    ContainingNamespace:
+                    {
+                        Name: "Attributes",
+                        ContainingNamespace: { Name: "DecoWeaver", ContainingNamespace.IsGlobalNamespace: true }
+                    }
+                })
                 continue;
 
             var isInterceptable = AttributeHelpers.GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
