@@ -11,7 +11,7 @@
         <RootNamespace>$(PackageId)</RootNamespace>
         <Title>$(PackageId)</Title>
         <Description>DecoWeaver is a .NET incremental source generator that enables compile-time decorator registration using C# 11+ interceptors. Zero runtime overhead, type-safe decorator chains, and support for closed generic registrations in .NET dependency injection.</Description>
-        <PackageTags>source-generator;roslyn;dependency-injection;decorator-pattern;interceptors;compile-time;aop;di;ioc;dotnet</PackageTags>
+        <PackageTags>source-generator;roslyn;dependency-injection;decorator-pattern;interceptors;compile-time;aop;di;ioc;dotnet;csharp;decorators;code-generation;cross-cutting;performance</PackageTags>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
     
