@@ -3,8 +3,6 @@ using DecoWeaver.Roslyn;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-// RoslynAdapters
-
 namespace DecoWeaver.Providers;
 
 internal static class DecoratedByGenericProvider
@@ -25,15 +23,18 @@ internal static class DecoratedByGenericProvider
         // Process all [DecoratedBy<T>] attributes on this class
         foreach (var attr in ctx.Attributes)
         {
-            // Only process DecoratedByAttribute<T> (generic version)
-            if (attr.AttributeClass is not { IsGenericType: true, TypeArguments.Length: 1 })
-                continue;
-
-            // Verify this is the correct generic attribute using metadata name and namespace
-            var attrClass = attr.AttributeClass;
-            if (attrClass.MetadataName != "DecoratedByAttribute`1")
-                continue;
-            if (attrClass.ContainingNamespace?.ToDisplayString() != "DecoWeaver.Attributes")
+            // Only process DecoratedByAttribute<T> (generic version) with pattern matching for namespace
+            if (attr.AttributeClass is not
+                {
+                    IsGenericType: true,
+                    TypeArguments.Length: 1,
+                    MetadataName: AttributeNames.GenericDecoratedByMetadataName,
+                    ContainingNamespace:
+                    {
+                        Name: "Attributes",
+                        ContainingNamespace: { Name: "DecoWeaver", ContainingNamespace.IsGlobalNamespace: true }
+                    }
+                })
                 continue;
 
             var isInterceptable = AttributeHelpers.GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);

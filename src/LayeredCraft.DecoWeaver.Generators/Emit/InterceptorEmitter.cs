@@ -4,6 +4,7 @@ using System.Text;
 using DecoWeaver.Model;
 using DecoWeaver.Providers;
 using DecoWeaver.Util;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace DecoWeaver.Emit;
 
@@ -84,7 +85,7 @@ internal static class InterceptorEmitter
             : Array.Empty<string>();
 
         // Emit the [InterceptsLocation] attribute
-        sb.AppendLine($"        [InterceptsLocation(version: 1, data: \"{Escape(reg.InterceptsData)}\")]");
+        sb.AppendLine($"        [InterceptsLocation(version: 1, data: {Escape(reg.InterceptsData)})]");
 
         // Emit the method - MUST be generic to match the original signature
         sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}, {implFqn}&gt;(IServiceCollection)</summary>");
@@ -185,5 +186,5 @@ internal static class InterceptorEmitter
     }
 
     private static string Escape(string s) =>
-        s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        SymbolDisplay.FormatLiteral(s, quote: true);
 }
