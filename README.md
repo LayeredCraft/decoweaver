@@ -71,7 +71,7 @@ For more examples including open generics, multiple decorators, and ordering, se
 ## Key Features
 
 - **Multiple Decorators**: Stack multiple decorators with explicit ordering
-- **Open Generic Support**: Works with `IRepository<T>`, `ICommand<T>`, etc.
+- **Generic Type Decoration**: Decorate generic types like `IRepository<T>` with open generic decorators
 - **Type-Safe**: Compile-time validation catches errors early
 - **Zero Configuration**: No runtime registration or setup needed
 - **Debuggable**: Generated code is readable and inspectable

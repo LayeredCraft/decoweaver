@@ -46,7 +46,7 @@ The solution contains four main projects:
    - Emits interceptor code to `DecoWeaver.Interceptors.ClosedGenerics.g.cs`
 
 3. **samples/DecoWeaver.Sample** (net10.0)
-   - Demonstrates open generic decorator registration
+   - Demonstrates closed generic registration with open generic decorators
    - References both Attributes and Generators projects
 
 4. **test/LayeredCraft.DecoWeaver.Generator.Tests** (net8.0)
@@ -64,7 +64,7 @@ The generator follows an incremental generation pipeline with these key stages:
 2. **Attribute Discovery**: Two parallel streams discover decorators:
    - `DecoratedByGenericProvider`: Handles `[DecoratedBy<TDecorator>]`
    - `DecoratedByNonGenericProvider`: Handles `[DecoratedBy(typeof(...))]`
-3. **Registration Discovery**: `OpenGenericRegistrationProvider` finds DI registrations like `AddScoped(typeof(IRepo<>), typeof(SqlRepo<>))`
+3. **Registration Discovery**: `ClosedGenericRegistrationProvider` finds DI registrations like `AddScoped<IRepository<User>, Repository<User>>()`
 4. **Data Combination**: Maps implementations to their decorators, ordered by priority
 5. **Code Emission**: Generates interceptor methods with `[InterceptsLocation]` attributes
 
@@ -167,12 +167,23 @@ Tests live in `/test/Cases/{NNN}_{Description}/` directories:
 - Undecorated implementation registered with key
 - Factory registration wraps keyed service with decorators
 
-### Open Generic Support
+### Generic Type Decoration
 
-- Generator discovers open generic registrations: `AddScoped(typeof(IRepo<>), typeof(SqlRepo<>))`
-- Decorator types can be open generics: `[DecoratedBy<CachingRepo<>>]`
-- Runtime closing via `MakeGenericType` when service is resolved
+- **IMPORTANT**: Generator ONLY intercepts **closed generic registrations** using the `AddScoped<TService, TImplementation>()` syntax
+- Open generic registrations using `AddScoped(typeof(IRepo<>), typeof(SqlRepo<>))` are **NOT intercepted**
+- Decorator types CAN be open generics: `[DecoratedBy<CachingRepo<>>]`
+- Open generic decorators are closed at runtime via `MakeGenericType` when the service is resolved
 - Type arguments extracted from the service type being resolved
+
+**Supported Registration Pattern**:
+```csharp
+// ✅ Closed generic registration - INTERCEPTED by DecoWeaver
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
+
+// ❌ Open generic registration - NOT intercepted
+services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+```
 
 ### Attribute Compilation
 

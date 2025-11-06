@@ -217,43 +217,49 @@ public static IServiceCollection AddScoped<TService, TImplementation>(
 }
 ```
 
-## Open Generic Interceptors
+## Generic Type Decoration Interceptors
 
-For open generic registrations, DecoWeaver generates interceptors that work with runtime types:
+For closed generic registrations with open generic decorators, DecoWeaver generates interceptors that close decorator types at runtime:
+
+!!! warning "Registration Requirement"
+    DecoWeaver requires **closed generic registrations** using the `AddScoped<TService, TImplementation>()` syntax. Open generic registrations using `AddScoped(typeof(...), typeof(...))` are **NOT intercepted**.
 
 ```csharp
-// Your code
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Your code - closed generic registration with open generic decorator
+[DecoratedBy<CachingRepository<>>]  // Open generic decorator
+public class Repository<T> : IRepository<T> where T : class { }
 
-// Generated interceptor
+services.AddScoped<IRepository<User>, Repository<User>>();  // Closed registration
+
+// Generated interceptor for this specific closed registration
 [InterceptsLocation(version: 1, data: "base64-encoded-hash")]
-public static IServiceCollection AddScoped_IRepository_Repository(
-    this IServiceCollection services,
-    Type serviceType,
-    Type implementationType)
+public static IServiceCollection AddScoped_IRepository_User_Repository_User(
+    this IServiceCollection services)
 {
-    services.AddKeyedScoped(
-        serviceType,
-        implementationType,
-        "IRepository<>|Repository<>");
+    // Register undecorated implementation with keyed service
+    services.AddKeyedScoped<IRepository<User>, Repository<User>>(
+        "IRepository<User>|Repository<User>");
 
-    services.AddScoped(serviceType, (sp, resolvedServiceType) =>
+    // Register factory that closes the open generic decorator
+    services.AddScoped<IRepository<User>>(sp =>
     {
-        // Get type arguments at runtime
-        var typeArgs = resolvedServiceType.GenericTypeArguments;
+        // Get undecorated implementation
+        var inner = sp.GetRequiredKeyedService<IRepository<User>>(
+            "IRepository<User>|Repository<User>");
 
-        // Close open generic types
-        var closedImpl = implementationType.MakeGenericType(typeArgs);
-        var inner = sp.GetRequiredKeyedService(resolvedServiceType, "...");
+        // Close open generic decorator at runtime: CachingRepository<> → CachingRepository<User>
+        var decoratorType = typeof(CachingRepository<>).MakeGenericType(typeof(User));
 
-        // Apply decorators
-        var decoratorType = typeof(CachingRepository<>).MakeGenericType(typeArgs);
-        return Activator.CreateInstance(decoratorType, inner, /* dependencies */);
+        // Resolve dependencies and construct
+        var cache = sp.GetRequiredService<IMemoryCache>();
+        return (IRepository<User>)Activator.CreateInstance(decoratorType, inner, cache);
     });
 
     return services;
 }
 ```
+
+Each closed generic registration gets its own interceptor with the decorator closed to the appropriate type.
 
 ## Debugging Interceptors
 

@@ -11,7 +11,7 @@
 - **⚡ Zero Runtime Overhead**: Decorators applied at compile time using C# interceptors
 - **🎯 Type-Safe**: Full compile-time validation with IntelliSense support
 - **🔧 Simple API**: Just add `[DecoratedBy<T>]` attributes to your classes
-- **🚀 Open Generic Support**: Works seamlessly with `IRepository<T>` patterns
+- **🚀 Generic Type Decoration**: Decorate generic types like `IRepository<T>` with open generic decorators
 - **📦 No Runtime Dependencies**: Only build-time source generator dependency
 - **🔗 Order Control**: Explicit decorator ordering via `Order` property
 - **✨ Clean Generated Code**: Readable, debuggable interceptor code
@@ -121,9 +121,9 @@ public class UserRepository : IUserRepository
 // Result: MetricsRepository → CachingRepository → LoggingRepository → UserRepository
 ```
 
-## Open Generic Support
+## Generic Type Decoration
 
-DecoWeaver works seamlessly with open generic types:
+DecoWeaver supports decorating generic types with open generic decorators:
 
 ```csharp
 public interface IRepository<T> where T : class
@@ -137,12 +137,16 @@ public class Repository<T> : IRepository<T> where T : class
     // Your implementation
 }
 
-// Register open generic
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Register each closed generic type - required for DecoWeaver
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 
-// All closed versions get decorated automatically
+// Each gets its own decorated instance
 var userRepo = provider.GetRequiredService<IRepository<User>>();
 // Returns: CachingRepository<User> wrapping Repository<User>
+
+var productRepo = provider.GetRequiredService<IRepository<Product>>();
+// Returns: CachingRepository<Product> wrapping Repository<Product>
 ```
 
 ## Documentation

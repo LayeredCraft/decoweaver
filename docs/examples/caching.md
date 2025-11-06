@@ -429,9 +429,10 @@ public class User : IEntity { }
 [CacheDuration(60)]
 public class Product : IEntity { }
 
-// Registration
+// Registration - DecoWeaver requires closed generic registrations
 services.AddMemoryCache();
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 ```
 
 ## Hybrid Caching

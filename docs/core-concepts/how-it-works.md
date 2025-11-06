@@ -121,34 +121,41 @@ services.AddScoped<IUserRepository>(sp =>
 
 The result: `CachingRepository` → `LoggingRepository` → `UserRepository`
 
-## Open Generic Support
+## Generic Type Decoration
 
-For open generic registrations, DecoWeaver generates interceptors that handle runtime type closing:
+For closed generic registrations with open generic decorators, DecoWeaver generates interceptors that handle runtime type closing:
+
+!!! warning "Registration Requirement"
+    DecoWeaver requires **closed generic registrations** using the `AddScoped<TService, TImplementation>()` syntax. Open generic registrations using `AddScoped(typeof(...), typeof(...))` are **NOT supported**.
 
 **Your Code**:
 ```csharp
-[DecoratedBy<CachingRepository<>>]
+[DecoratedBy<CachingRepository<>>]  // Open generic decorator
 public class Repository<T> : IRepository<T> where T : class { }
 
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Register each closed generic type - required for DecoWeaver
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 ```
 
-**Generated Factory**:
+**Generated Factory** (for each closed registration):
 ```csharp
-services.AddScoped(typeof(IRepository<>), (sp, serviceType) =>
+// For IRepository<User> registration:
+services.AddScoped<IRepository<User>>(sp =>
 {
-    // Extract type arguments from resolved service type
-    var typeArgs = serviceType.GenericTypeArguments;
+    // Get the undecorated implementation from keyed service
+    var inner = sp.GetRequiredKeyedService<IRepository<User>>("...");
 
-    // Close the open generic implementation
-    var implType = typeof(Repository<>).MakeGenericType(typeArgs);
-    var inner = sp.GetRequiredKeyedService(serviceType, "...");
+    // Close the open generic decorator at runtime: CachingRepository<> → CachingRepository<User>
+    var decoratorType = typeof(CachingRepository<>).MakeGenericType(typeof(User));
 
-    // Close the open generic decorator
-    var decoratorType = typeof(CachingRepository<>).MakeGenericType(typeArgs);
-    return Activator.CreateInstance(decoratorType, inner, /* deps */);
+    // Resolve decorator dependencies and construct
+    var cache = sp.GetRequiredService<IMemoryCache>();
+    return (IRepository<User>)Activator.CreateInstance(decoratorType, inner, cache);
 });
 ```
+
+Each closed generic registration gets its own interceptor with the decorator closed to the appropriate type at runtime.
 
 ## Incremental Generation
 
