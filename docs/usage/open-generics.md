@@ -1,6 +1,9 @@
-# Open Generic Support
+# Generic Type Decoration
 
-DecoWeaver provides full support for decorating open generic types like `IRepository<T>`, making it easy to apply cross-cutting concerns to generic service patterns.
+DecoWeaver supports decorating generic types like `IRepository<T>` with open generic decorators, making it easy to apply cross-cutting concerns to generic service patterns.
+
+!!! warning "Registration Requirement"
+    DecoWeaver requires **closed generic registrations** using the `AddScoped<TService, TImplementation>()` syntax. Open generic registrations using `AddScoped(typeof(IRepository<>), typeof(Repository<>))` are **NOT supported** and will not apply decorators.
 
 ## What are Open Generics?
 
@@ -21,12 +24,14 @@ public class Repository<T> : IRepository<T> where T : class
 }
 ```
 
-When registered in DI, they work for any type argument:
+With DecoWeaver, register each closed generic type to apply decorators:
 
 ```csharp
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Register each closed generic type explicitly - required for DecoWeaver
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 
-// Works for any T
+// Resolves decorated instances
 var userRepo = provider.GetRequiredService<IRepository<User>>();
 var productRepo = provider.GetRequiredService<IRepository<Product>>();
 ```
@@ -193,10 +198,9 @@ public class KeyValueStore<TKey, TValue> : IKeyValueStore<TKey, TValue>
     // Implementation
 }
 
-// Register
-services.AddScoped(
-    typeof(IKeyValueStore<,>),
-    typeof(KeyValueStore<,>));
+// Register each closed generic type - required for DecoWeaver
+services.AddScoped<IKeyValueStore<string, int>, KeyValueStore<string, int>>();
+services.AddScoped<IKeyValueStore<string, User>, KeyValueStore<string, User>>();
 ```
 
 ## Nested Generic Types
@@ -290,9 +294,9 @@ public class UserRepository : Repository<User>
     // User-specific implementation
 }
 
-// Register
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-services.AddScoped<IRepository<User>, UserRepository>();  // Override for User
+// Register each type - DecoWeaver requires closed registrations
+services.AddScoped<IRepository<Product>, Repository<Product>>();
+services.AddScoped<IRepository<User>, UserRepository>();  // User-specific
 ```
 
 ## Dependency Injection with Open Generics
@@ -328,14 +332,15 @@ public class Repository<T> : IRepository<T>
     // Implementation
 }
 
-// Register validators
+// Register validators (standard .NET DI - not decorated by DecoWeaver)
 services.AddScoped(typeof(IValidator<>), typeof(Validator<>));
 
-// Register repository - validators are automatically resolved per type
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Register repositories - DecoWeaver requires closed registrations
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 
 var userRepo = provider.GetRequiredService<IRepository<User>>();
-// Resolves: ValidationRepository<User> with IValidator<User>
+// Resolves: ValidationRepository<User> wrapping Repository<User>, with IValidator<User> injected
 ```
 
 ## Accessing Type Information
@@ -380,35 +385,38 @@ public class Product : IEntity { }
 
 For open generic decorators, DecoWeaver generates interceptors that:
 
-1. **Detect open generic registration**:
+1. **Detect closed generic registration**:
    ```csharp
-   services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+   // You register each closed generic type
+   services.AddScoped<IRepository<User>, Repository<User>>();
    ```
 
-2. **Generate factory that closes types at runtime**:
+2. **Generate interceptor that wraps with factory**:
    ```csharp
-   services.AddScoped(typeof(IRepository<>), (sp, serviceType) =>
+   // DecoWeaver generates code that intercepts the above call and rewrites it to:
+
+   // 1. Register undecorated implementation as keyed service
+   services.AddKeyedScoped<IRepository<User>, Repository<User>>(key);
+
+   // 2. Register factory that resolves keyed service and applies decorators
+   services.AddScoped<IRepository<User>>(sp =>
    {
-       // Extract type arguments from requested service
-       var typeArgs = serviceType.GenericTypeArguments;
+       // Get the undecorated implementation
+       var impl = sp.GetRequiredKeyedService<IRepository<User>>(key);
 
-       // Close the implementation type
-       var implType = typeof(Repository<>).MakeGenericType(typeArgs);
-       var impl = sp.GetRequiredKeyedService(serviceType, key);
-
-       // Close the decorator type
-       var decoratorType = typeof(CachingRepository<>).MakeGenericType(typeArgs);
+       // Close the open generic decorator at runtime: CachingRepository<> → CachingRepository<User>
+       var decoratorType = typeof(CachingRepository<>).MakeGenericType(typeof(User));
 
        // Resolve decorator dependencies and construct
        var cache = sp.GetRequiredService<IMemoryCache>();
-       return Activator.CreateInstance(decoratorType, impl, cache);
+       return (IRepository<User>)Activator.CreateInstance(decoratorType, impl, cache);
    });
    ```
 
-3. **Apply to all closed generic instances**:
-   - `IRepository<User>` → `CachingRepository<User>`
-   - `IRepository<Product>` → `CachingRepository<Product>`
-   - etc.
+3. **Runtime type closing for each registered type**:
+   - `IRepository<User>` registration → `CachingRepository<User>` (closed at runtime)
+   - `IRepository<Product>` registration → `CachingRepository<Product>` (closed at runtime)
+   - Each closed registration gets its own interceptor
 
 ## Common Patterns
 
@@ -568,18 +576,21 @@ public class StringKeyValueStore<TValue> { }
 
 ### Closed Generic Registration Required
 
-DecoWeaver requires closed generic registration, not open generic registration of the decorator itself:
+DecoWeaver requires closed generic registration syntax:
 
 ```csharp
-// ❌ This won't work:
-services.AddScoped(typeof(IRepository<>), typeof(CachingRepository<>));
+// ❌ Open generic registration - NOT intercepted by DecoWeaver:
+services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// ✅ Use the attribute instead:
+// ✅ Closed generic registration - intercepted and decorated:
 [DecoratedBy<CachingRepository<>>]
 public class Repository<T> : IRepository<T> { }
 
-services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+services.AddScoped<IRepository<User>, Repository<User>>();
+services.AddScoped<IRepository<Product>, Repository<Product>>();
 ```
+
+Each closed registration is intercepted separately and gets its own decorator chain.
 
 ## Best Practices
 
