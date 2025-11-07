@@ -328,4 +328,30 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task MergePrecedence_Deduplication_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/027_MergePrecedence_Deduplication/Repository.cs",
+                "Cases/027_MergePrecedence_Deduplication/Program.cs",
+                "Cases/027_MergePrecedence_Deduplication/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task MergePrecedence_SortOrder_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/028_MergePrecedence_SortOrder/Repository.cs",
+                "Cases/028_MergePrecedence_SortOrder/Program.cs",
+                "Cases/028_MergePrecedence_SortOrder/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }
