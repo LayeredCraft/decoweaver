@@ -315,4 +315,17 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_SkipAssemblyWithClassLevel_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/026_SkipAssemblyWithClassLevel/Repository.cs",
+                "Cases/026_SkipAssemblyWithClassLevel/Program.cs",
+                "Cases/026_SkipAssemblyWithClassLevel/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }
