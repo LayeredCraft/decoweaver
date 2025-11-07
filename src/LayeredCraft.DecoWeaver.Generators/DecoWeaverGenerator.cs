@@ -112,15 +112,14 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .Select(static (pair, _) => pair.Left)
             .WithTrackingName(TrackingNames.Gate_Decorations_SkipAssembly);
 
-        // Collect both class-level decoration streams (generic and non-generic)
-        var classDecos = genericGated.Collect()
+        // Collect class-level decorations (generic + non-generic combined)
+        var allDecorations = genericGated.Collect()
             .Combine(nonGenericGated.Collect())
-            .Select(static (p, _) => p.Left.AddRange(p.Right));
-
-        // Combine class-level and assembly-level decorations for the merge phase
-        var allDecorations = classDecos
-            .Combine(serviceGated.Collect())
             .WithTrackingName(TrackingNames.Attr_All_Combined);
+
+        // Collect assembly-level service decorations separately (to be matched against registrations)
+        var serviceDecosCollected = serviceGated.Collect()
+            .WithTrackingName(TrackingNames.Attr_Service_Collected);
         
         
         // --- Closed generic registration discovery -----------------------
@@ -144,33 +143,61 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
         var skipAssemblyCollected = skipAssemblyGated
             .Collect()
             .WithTrackingName(TrackingNames.Reg_SkipAssembly_Collect);
-        
+
+        // Combine all inputs using Select to create a clean named tuple structure
+        var allInputs = allDecorations
+            .Combine(serviceDecosCollected)
+            .Combine(skipAssemblyCollected)
+            .Combine(closedGenericRegsCollected)
+            .Select(static (data, _) => (
+                GenericDecos: data.Left.Left.Left.Left,
+                NonGenericDecos: data.Left.Left.Left.Right,
+                ServiceDecos: data.Left.Left.Right,
+                SkipMarkers: data.Left.Right,
+                Registrations: data.Right
+            ));
+
         // Emit once we have decorations + registrations
         context.RegisterSourceOutput(
-            allDecorations
-                .Combine(skipAssemblyCollected)
-                .Combine(closedGenericRegsCollected)
-                .WithTrackingName(TrackingNames.Emit_ClosedGenericInterceptors),
-            static (spc, pair) =>
+            allInputs.WithTrackingName(TrackingNames.Emit_ClosedGenericInterceptors),
+            (spc, inputs) =>
             {
-                var ((classDecos, serviceDecos), skipMarkers) = pair.Left;
-                var regs = pair.Right;
+                // Merge class-level decorations (generic + non-generic)
+                var classDecos = inputs.GenericDecos.Concat(inputs.NonGenericDecos).ToImmutableArray();
 
                 // Build a fast lookup of implementations that opted out via [SkipAssemblyDecorators]
-                var skipped = new HashSet<TypeDefId>(skipMarkers.Select(m => m.ImplementationDef));
+                var skipped = new HashSet<TypeDefId>(inputs.SkipMarkers.Select(m => m.ImplementationDef));
 
-                // Apply SkipAssemblyDecorators: filter ONLY assembly-level decorations.
-                // Class-level decorations are never filtered - they always apply regardless of opt-out status.
-                var filteredServiceDecos = serviceDecos
-                    .Where(d => !skipped.Contains(d.ImplementationDef))
-                    .ToImmutableArray();
+                // Convert ServiceDecoration → DecoratorToIntercept by matching service types with registrations
+                var assemblyDecos = new List<DecoratorToIntercept>();
+                foreach (var reg in inputs.Registrations)
+                {
+                    // Match assembly-level decorations where the service type definition matches the registration's service
+                    foreach (var sd in inputs.ServiceDecos)
+                    {
+                        // Skip if service type doesn't match or wrong assembly
+                        if (!sd.ServiceDef.Equals(reg.ServiceDef) ||
+                            sd.AssemblyName != reg.ImplDef.AssemblyName)
+                            continue;
+
+                        // Skip if this implementation opted out
+                        if (skipped.Contains(reg.ImplDef))
+                            continue;
+
+                        assemblyDecos.Add(new DecoratorToIntercept(
+                            ImplementationDef: reg.ImplDef,
+                            DecoratorDef: sd.DecoratorDef,
+                            Order: sd.Order,
+                            IsInterceptable: true));
+                    }
+                }
 
                 // Merge class-level and (filtered) assembly-level decorations
-                var allDecos = classDecos.AddRange(filteredServiceDecos);
+                var allDecos = classDecos.Concat(assemblyDecos).ToImmutableArray();
                 var byImpl = BuildDecorationMap(allDecos); // Dictionary<TypeDefId, EquatableArray<TypeDefId>>
 
                 // Only emit interceptors for registrations that have decorators
-                var regsWithDecorators = regs
+                var regsWithDecorators = inputs.Registrations
                     .Where(r => byImpl.TryGetValue(r.ImplDef, out var decos) && decos.Count > 0)
                     .ToEquatableArray();
 

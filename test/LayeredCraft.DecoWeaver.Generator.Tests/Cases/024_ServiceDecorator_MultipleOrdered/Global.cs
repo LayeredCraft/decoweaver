@@ -1,4 +1,4 @@
 using DecoWeaver.Sample;
 
-[assembly: DecoWeaver.Attributes.DecorateService(typeof(DynamoDbRepository<>), typeof(CachingRepository<>), 1)]
-[assembly: DecoWeaver.Attributes.DecorateService(typeof(DynamoDbRepository<>), typeof(LoggingRepository<>), 2)]
+[assembly: DecoWeaver.Attributes.DecorateService(typeof(IRepository<>), typeof(CachingRepository<>), 1)]
+[assembly: DecoWeaver.Attributes.DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>), 2)]

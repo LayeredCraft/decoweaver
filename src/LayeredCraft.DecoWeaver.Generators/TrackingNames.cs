@@ -23,6 +23,7 @@ public static class TrackingNames
     public const string Attr_Generic_Stream           = nameof(Attr_Generic_Stream);
     public const string Attr_NonGeneric_Stream        = nameof(Attr_NonGeneric_Stream);
     public const string Attr_All_Combined             = nameof(Attr_All_Combined);
+    public const string Attr_Service_Collected        = nameof(Attr_Service_Collected);
 
     // Gated flow
     public const string Gate_Decorations              = nameof(Gate_Decorations);

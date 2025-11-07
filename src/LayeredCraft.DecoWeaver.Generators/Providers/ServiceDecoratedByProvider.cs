@@ -19,18 +19,21 @@ internal static class ServiceDecoratedByProvider
                al.Target is { Identifier.ValueText: "assembly" or "module" });
 
     /// <summary>
-    /// Processes all [DecorateService] attributes on an assembly, yielding one DecoratorToIntercept per attribute.
-    /// This allows multiple decorators to be applied to the same implementation.
+    /// Processes all [DecorateService] attributes on an assembly, yielding one ServiceDecoration per attribute.
+    /// These describe decorators that should apply to all implementations of a service type within the assembly.
     /// </summary>
-    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorAttributeSyntaxContext ctx,
+    internal static IEnumerable<ServiceDecoration?> TransformMultiple(GeneratorAttributeSyntaxContext ctx,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        
+
         if (ctx.TargetSymbol is not IAssemblySymbol asm)
             yield break;
 
-        // Process all [DecorateService] attributes on this class (pre-filtered by ForAttributeWithMetadataName)
+        // Get the assembly name for scoping the decoration rules
+        var assemblyName = asm.Name;
+
+        // Process all [DecorateService] attributes on this assembly (pre-filtered by ForAttributeWithMetadataName)
         foreach (var attr in ctx.Attributes)
         {
             // Only process DecorateServiceAttribute with pattern matching for namespace
@@ -49,8 +52,9 @@ internal static class ServiceDecoratedByProvider
             if (order == 0 && attr.ConstructorArguments is [_, _, { Value: int ctorOrder } _, ..])
                 order = ctorOrder;
 
-            // First ctor arg is the Type
-            if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Kind != TypedConstantKind.Type ||
+            // Constructor args: [0] = service type, [1] = decorator type
+            if (attr.ConstructorArguments.Length < 2 ||
+                attr.ConstructorArguments[0].Kind != TypedConstantKind.Type ||
                 attr.ConstructorArguments[1].Kind != TypedConstantKind.Type)
                 continue;
 
@@ -58,11 +62,11 @@ internal static class ServiceDecoratedByProvider
             var decoratorSym = (ITypeSymbol?)attr.ConstructorArguments[1].Value;
             if (serviceSym is null || decoratorSym is null) continue;
 
-            yield return new DecoratorToIntercept(
-                ImplementationDef: serviceSym.ToTypeId().Definition,
+            yield return new ServiceDecoration(
+                AssemblyName: assemblyName,
+                ServiceDef: serviceSym.ToTypeId().Definition,
                 DecoratorDef: decoratorSym.ToTypeId().Definition,
-                Order: order,
-                IsInterceptable: true);
+                Order: order);
         }
     }
 }
