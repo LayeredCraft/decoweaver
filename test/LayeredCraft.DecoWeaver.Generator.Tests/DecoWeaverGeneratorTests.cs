@@ -354,4 +354,56 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_RemovesAssemblyDecorator_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/029_DoNotDecorate_RemovesAssemblyDecorator/Repository.cs",
+                "Cases/029_DoNotDecorate_RemovesAssemblyDecorator/Program.cs",
+                "Cases/029_DoNotDecorate_RemovesAssemblyDecorator/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_Multiple_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/030_DoNotDecorate_Multiple/Repository.cs",
+                "Cases/030_DoNotDecorate_Multiple/Program.cs",
+                "Cases/030_DoNotDecorate_Multiple/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_OpenGenericMatching_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/031_DoNotDecorate_OpenGenericMatching/Repository.cs",
+                "Cases/031_DoNotDecorate_OpenGenericMatching/Program.cs",
+                "Cases/031_DoNotDecorate_OpenGenericMatching/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_IsolationCheck_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/032_DoNotDecorate_IsolationCheck/Repository.cs",
+                "Cases/032_DoNotDecorate_IsolationCheck/Program.cs",
+                "Cases/032_DoNotDecorate_IsolationCheck/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }

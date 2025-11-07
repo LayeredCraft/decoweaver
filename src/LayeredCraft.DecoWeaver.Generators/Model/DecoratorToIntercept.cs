@@ -76,8 +76,7 @@ internal readonly record struct SkipAssemblyDecoratorsMarker(
 /// </summary>
 internal readonly record struct DoNotDecorateDirective(
     TypeDefId ImplementationDef, // where the attribute appears
-    TypeDefId DecoratorDef,      // definition to remove (generic def allowed)
-    LocationId Location
+    TypeDefId DecoratorDef       // definition to remove (generic def allowed)
 );
 
 /// <summary>

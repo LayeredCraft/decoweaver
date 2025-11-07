@@ -19,6 +19,9 @@ public static class TrackingNames
     public const string Attr_SkipAssemblyDecoration_Transform = nameof(Attr_SkipAssemblyDecoration_Transform);
     public const string Attr_SkipAssemblyDecoration_FilterNotNull = nameof(Attr_SkipAssemblyDecoration_FilterNotNull);
     public const string Attr_SkipAssemblyDecoration_Stream = nameof(Attr_SkipAssemblyDecoration_Stream);
+    public const string Attr_DoNotDecorate_Transform = nameof(Attr_DoNotDecorate_Transform);
+    public const string Attr_DoNotDecorate_FilterNotNull = nameof(Attr_DoNotDecorate_FilterNotNull);
+    public const string Attr_DoNotDecorate_Stream = nameof(Attr_DoNotDecorate_Stream);
 
     public const string Attr_Generic_Stream           = nameof(Attr_Generic_Stream);
     public const string Attr_NonGeneric_Stream        = nameof(Attr_NonGeneric_Stream);
@@ -40,6 +43,7 @@ public static class TrackingNames
     public const string Reg_ClosedGeneric_Filter   = nameof(Reg_ClosedGeneric_Filter);
     public const string Reg_ClosedGeneric_Collect = nameof(Reg_ClosedGeneric_Collect);
     public const string Reg_SkipAssembly_Collect = nameof(Reg_SkipAssembly_Collect);
+    public const string Reg_DoNotDecorate_Collect = nameof(Reg_DoNotDecorate_Collect);
 
     // Emission
     public const string Emit_ClosedGenericInterceptors = nameof(Emit_ClosedGenericInterceptors);
@@ -49,4 +53,5 @@ public static class TrackingNames
     public const string Gate_Decorations_NonGeneric = nameof(Gate_Decorations_NonGeneric);
     public const string Gate_Decorations_Service = nameof(Gate_Decorations_Service);
     public const string Gate_Decorations_SkipAssembly = nameof(Gate_Decorations_SkipAssembly);
+    public const string Gate_Decorations_DoNotDecorate = nameof(Gate_Decorations_DoNotDecorate);
 }
