@@ -106,3 +106,48 @@ public sealed class UserLoggingDecorator : IUserService
         _inner.CreateUser(name);
     }
 }
+
+public interface IAssemblyInterface<T>
+{
+    void DoSomething(T item);
+}
+
+public sealed class ConcreateClass<T> : IAssemblyInterface<T>
+{
+    public void DoSomething(T item)
+    {
+        Console.WriteLine($"Doing something with {item}");
+    }
+}
+
+public sealed class CachingDecorator<T> : IAssemblyInterface<T>
+{
+    private readonly IAssemblyInterface<T> _inner;
+
+    public CachingDecorator(IAssemblyInterface<T> inner)
+    {
+        _inner = inner;
+    }
+
+    public void DoSomething(T item)
+    {
+        Console.WriteLine("Caching before doing something.");
+        _inner.DoSomething(item);
+    }
+}
+
+public sealed class LoggingDecorator<T> : IAssemblyInterface<T>
+{
+    private readonly IAssemblyInterface<T> _inner;
+
+    public LoggingDecorator(IAssemblyInterface<T> inner)
+    {
+        _inner = inner;
+    }
+
+    public void DoSomething(T item)
+    {
+        Console.WriteLine("Logging before doing something.");
+        _inner.DoSomething(item);
+    }
+}

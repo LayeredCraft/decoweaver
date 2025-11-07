@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DecoWeaver.Providers;
 
-internal static class DecoratedByNonGenericProvider
+internal static class ServiceDecoratedByProvider
 {
     /// <summary>
     /// Filters to classes only (AttributeTargets.Class). ForAttributeWithMetadataName passes all
@@ -14,26 +14,29 @@ internal static class DecoratedByNonGenericProvider
     /// not value types (structs/record structs).
     /// </summary>
     internal static bool Predicate(SyntaxNode node, CancellationToken _)
-        => node is ClassDeclarationSyntax;
+        => node is CompilationUnitSyntax cu
+           && cu.AttributeLists.Any(al =>
+               al.Target is { Identifier.ValueText: "assembly" or "module" });
 
     /// <summary>
-    /// Processes all [DecoratedBy] attributes on a class, yielding one DecoratorToIntercept per attribute.
+    /// Processes all [DecorateService] attributes on an assembly, yielding one DecoratorToIntercept per attribute.
     /// This allows multiple decorators to be applied to the same implementation.
     /// </summary>
-    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
+    internal static IEnumerable<DecoratorToIntercept?> TransformMultiple(GeneratorAttributeSyntaxContext ctx,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-
-        if (ctx.TargetSymbol is not INamedTypeSymbol implDef)
+        
+        if (ctx.TargetSymbol is not IAssemblySymbol asm)
             yield break;
 
-        // Process all [DecoratedBy] attributes on this class (pre-filtered by ForAttributeWithMetadataName)
+        // Process all [DecorateService] attributes on this class (pre-filtered by ForAttributeWithMetadataName)
         foreach (var attr in ctx.Attributes)
         {
-            // Only process DecoratedByAttribute (non-generic version) with pattern matching for namespace
+            // Only process DecorateServiceAttribute with pattern matching for namespace
             if (attr.AttributeClass is not
                 {
-                    MetadataName: AttributeNames.DecoratedByMetadataName,
+                    MetadataName: AttributeNames.ServiceDecoratedByMetadataName,
                     ContainingNamespace:
                     {
                         Name: "Attributes",
@@ -41,24 +44,22 @@ internal static class DecoratedByNonGenericProvider
                     }
                 })
                 continue;
-
-            var isInterceptable = AttributeHelpers.GetBoolNamedArg(attr, "IsInterceptable", defaultValue: true);
-            if (!isInterceptable) continue;
-
-            // Order can be either ctor arg #1 (int) or named arg "Order"
+            // Order can either ctor arg #2 (int) or named arg "Order"
             var order = AttributeHelpers.GetIntNamedArg(attr, "Order", defaultValue: 0);
-            if (order == 0 && attr.ConstructorArguments is [_, { Value: int ctorOrder } _, ..])
+            if (order == 0 && attr.ConstructorArguments is [_, _, { Value: int ctorOrder } _, ..])
                 order = ctorOrder;
 
             // First ctor arg is the Type
-            if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Kind != TypedConstantKind.Type)
+            if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Kind != TypedConstantKind.Type ||
+                attr.ConstructorArguments[1].Kind != TypedConstantKind.Type)
                 continue;
 
-            var decoratorSym = (ITypeSymbol?)attr.ConstructorArguments[0].Value;
-            if (decoratorSym is null) continue;
+            var serviceSym = (ITypeSymbol?)attr.ConstructorArguments[0].Value;
+            var decoratorSym = (ITypeSymbol?)attr.ConstructorArguments[1].Value;
+            if (serviceSym is null || decoratorSym is null) continue;
 
             yield return new DecoratorToIntercept(
-                ImplementationDef: implDef.ToTypeId().Definition,
+                ImplementationDef: serviceSym.ToTypeId().Definition,
                 DecoratorDef: decoratorSym.ToTypeId().Definition,
                 Order: order,
                 IsInterceptable: true);

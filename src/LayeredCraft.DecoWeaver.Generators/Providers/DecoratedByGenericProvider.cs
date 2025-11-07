@@ -56,8 +56,7 @@ internal static class DecoratedByGenericProvider
                 ImplementationDef: implDef.ToTypeId().Definition,
                 DecoratorDef: decoratorSym.ToTypeId().Definition,
                 Order: order,
-                IsInterceptable: true,
-                Location: ctx.TargetNode.ToLocationId());
+                IsInterceptable: true);
         }
     }
 }

@@ -276,4 +276,43 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_SingleDecorator_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/023_ServiceDecorator_SingleDecorator/Repository.cs",
+                "Cases/023_ServiceDecorator_SingleDecorator/Program.cs",
+                "Cases/023_ServiceDecorator_SingleDecorator/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_MultipleOrdered_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/024_ServiceDecorator_MultipleOrdered/Repository.cs",
+                "Cases/024_ServiceDecorator_MultipleOrdered/Program.cs",
+                "Cases/024_ServiceDecorator_MultipleOrdered/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_WithSkipAssembly_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/025_ServiceDecorator_WithSkipAssembly/Repository.cs",
+                "Cases/025_ServiceDecorator_WithSkipAssembly/Program.cs",
+                "Cases/025_ServiceDecorator_WithSkipAssembly/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }

@@ -54,7 +54,39 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .WithTrackingName(TrackingNames.Attr_NonGeneric_FilterNotNull)
             .Select(static (x, _) => x!.Value)
             .WithTrackingName(TrackingNames.Attr_NonGeneric_Stream);
-
+        
+        // --- [assembly: DecorateService(...)] stream ----------------------
+        // Discovers assembly-level decorator declarations that apply to all implementations
+        // of a service type within the same assembly. This provides default decoration rules
+        // that can be overridden or opted-out of at the class level.
+        var serviceDecorations = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AttributeNames.ServiceDecoratedByAttribute,
+                predicate: ServiceDecoratedByProvider.Predicate,
+                transform: ServiceDecoratedByProvider.TransformMultiple)
+            .SelectMany(static (decorations, _) => decorations.ToImmutableArray()) // Flatten IEnumerable<ServiceDecoration?>
+            .WithTrackingName(TrackingNames.Attr_ServiceDecoration_Transform)
+            .Where(static x => x is not null)
+            .WithTrackingName(TrackingNames.Attr_ServiceDecoration_FilterNotNull)
+            .Select(static (x, _) => x!.Value)
+            .WithTrackingName(TrackingNames.Attr_ServiceDecoration_Stream);
+        
+        // --- [SkipAssemblyDecorators] stream --------------------------------
+        // Discovers implementations that have opted out of all assembly-level decorations.
+        // These markers are used to filter out assembly-level rules during the merge phase,
+        // while still allowing class-level decorations to be applied.
+        var skipAssemblyDecorations = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AttributeNames.SkipAssemblyDecorationAttribute,
+                predicate: SkipAssemblyDecoratorProvider.Predicate,
+                transform: SkipAssemblyDecoratorProvider.Transform)
+            .WithTrackingName(TrackingNames.Attr_SkipAssemblyDecoration_Transform)
+            .Where(static x => x is not null)
+            .WithTrackingName(TrackingNames.Attr_SkipAssemblyDecoration_FilterNotNull)
+            .Select(static (x, _) => x!.Value)
+            .WithTrackingName(TrackingNames.Attr_SkipAssemblyDecoration_Stream);
+            
+        
         // ✅ Gate each VALUES stream before Collect()
         var genericGated = genericDecorations
             .Combine(csharpSufficient)
@@ -67,12 +99,30 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .Where(static pair => pair.Right)
             .Select(static (pair, _) => pair.Left)
             .WithTrackingName(TrackingNames.Gate_Decorations_NonGeneric);
+        
+        var serviceGated = serviceDecorations
+            .Combine(csharpSufficient)
+            .Where(static pair => pair.Right)
+            .Select(static (pair, _) => pair.Left)
+            .WithTrackingName(TrackingNames.Gate_Decorations_Service);
+        
+        var skipAssemblyGated = skipAssemblyDecorations
+            .Combine(csharpSufficient)
+            .Where(static pair => pair.Right)
+            .Select(static (pair, _) => pair.Left)
+            .WithTrackingName(TrackingNames.Gate_Decorations_SkipAssembly);
 
-        // Collect both decoration streams
-        var allDecorations = genericGated.Collect()
+        // Collect both class-level decoration streams (generic and non-generic)
+        var classDecos = genericGated.Collect()
             .Combine(nonGenericGated.Collect())
-            .WithTrackingName(TrackingNames.Attr_All_Combined);
+            .Select(static (p, _) => p.Left.AddRange(p.Right));
 
+        // Combine class-level and assembly-level decorations for the merge phase
+        var allDecorations = classDecos
+            .Combine(serviceGated.Collect())
+            .WithTrackingName(TrackingNames.Attr_All_Combined);
+        
+        
         // --- Closed generic registration discovery -----------------------
         var closedGenericRegs = context.SyntaxProvider
             .CreateSyntaxProvider(
@@ -91,16 +141,32 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .Collect()
             .WithTrackingName(TrackingNames.Reg_ClosedGeneric_Collect);
 
+        var skipAssemblyCollected = skipAssemblyGated
+            .Collect()
+            .WithTrackingName(TrackingNames.Reg_SkipAssembly_Collect);
+        
         // Emit once we have decorations + registrations
         context.RegisterSourceOutput(
-            allDecorations.Combine(closedGenericRegsCollected)
+            allDecorations
+                .Combine(skipAssemblyCollected)
+                .Combine(closedGenericRegsCollected)
                 .WithTrackingName(TrackingNames.Emit_ClosedGenericInterceptors),
             static (spc, pair) =>
             {
-                var (genericDecos, nonGenericDecos) = pair.Left;
+                var ((classDecos, serviceDecos), skipMarkers) = pair.Left;
                 var regs = pair.Right;
 
-                var allDecos = genericDecos.AddRange(nonGenericDecos);
+                // Build a fast lookup of implementations that opted out via [SkipAssemblyDecorators]
+                var skipped = new HashSet<TypeDefId>(skipMarkers.Select(m => m.ImplementationDef));
+
+                // Apply SkipAssemblyDecorators: filter ONLY assembly-level decorations.
+                // Class-level decorations are never filtered - they always apply regardless of opt-out status.
+                var filteredServiceDecos = serviceDecos
+                    .Where(d => !skipped.Contains(d.ImplementationDef))
+                    .ToImmutableArray();
+
+                // Merge class-level and (filtered) assembly-level decorations
+                var allDecos = classDecos.AddRange(filteredServiceDecos);
                 var byImpl = BuildDecorationMap(allDecos); // Dictionary<TypeDefId, EquatableArray<TypeDefId>>
 
                 // Only emit interceptors for registrations that have decorators

@@ -6,13 +6,6 @@ namespace DecoWeaver.Roslyn;
 
 internal static class RoslynAdapters
 {
-    public static LocationId ToLocationId(this SyntaxNode node)
-    {
-        var span = node.GetLocation().SourceSpan;
-        var path = node.SyntaxTree.FilePath;
-        return new(path, span.Start, span.Length);
-    }
-
     public static TypeId ToTypeId(this ITypeSymbol t)
     {
         switch (t)
