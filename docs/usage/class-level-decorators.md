@@ -2,6 +2,9 @@
 
 The `[DecoratedBy]` attribute is the primary way to apply decorators in DecoWeaver. Apply it to your service implementation classes to automatically wrap them with decorators.
 
+!!! info "Assembly-Level Alternative"
+    For cross-cutting concerns applied to many implementations, consider using [Assembly-Level Decorators](assembly-level-decorators.md) instead. Class-level decorators are best for implementation-specific needs.
+
 ## Basic Syntax
 
 ### Generic Attribute
@@ -381,8 +384,46 @@ public class LoggingDecorator : IUserRepository
 4. **Document decorator behavior** with XML comments
 5. **Test decorators in isolation** with mocked inner implementations
 
+## Comparison with Assembly-Level
+
+| Aspect | Class-Level | Assembly-Level |
+|--------|-------------|----------------|
+| **Scope** | Single implementation | All implementations |
+| **Attribute Location** | On class | In global file |
+| **Use Case** | Implementation-specific | Cross-cutting concerns |
+| **Visibility** | More explicit | Less obvious |
+| **Flexibility** | Full control | Can opt-out with `[DoNotDecorate]` |
+
+### When to Use Each
+
+**Use Class-Level When**:
+- Decorator is specific to one implementation
+- You want explicit, visible decoration
+- Different implementations need different decorators
+- Testing or development-only decorators
+
+**Use Assembly-Level When**:
+- Same decorator applies to many implementations
+- Enforcing cross-cutting concerns (logging, metrics, caching)
+- Centralizing decorator configuration
+- Ensuring consistency across implementations
+
+**Combine Both When**:
+- Assembly-level for common concerns
+- Class-level for implementation-specific needs
+
+```csharp
+// GlobalUsings.cs - Common logging for all
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>), Order = 10)]
+
+// UserRepository.cs - Add validation specific to users
+[DecoratedBy<ValidationRepository<User>>(Order = 5)]
+public class UserRepository : IRepository<User> { }
+```
+
 ## Next Steps
 
+- Learn about [Assembly-Level Decorators](assembly-level-decorators.md) for cross-cutting concerns
 - Learn about [Multiple Decorators](multiple-decorators.md)
 - Explore [Open Generic Support](open-generics.md)
 - See [Examples](../examples/index.md) of real-world usage

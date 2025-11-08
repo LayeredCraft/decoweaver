@@ -119,10 +119,28 @@ To see the generated interceptor code:
 
 **Rider**: Solution Explorer → Generated Files node
 
+## Alternative: Assembly-Level Decorators
+
+Instead of applying decorators to each class individually, you can apply them to all implementations from one place:
+
+```csharp
+// In GlobalUsings.cs or any .cs file
+using DecoWeaver.Attributes;
+
+[assembly: DecorateService(typeof(IUserService), typeof(LoggingUserService))]
+
+// Now ALL IUserService implementations automatically get logging
+public class UserService : IUserService { }
+public class AdminUserService : IUserService { }
+```
+
+This is ideal for cross-cutting concerns like logging, metrics, or caching that apply to many services. See [Assembly-Level Decorators](../usage/assembly-level-decorators.md) for details.
+
 ## Next Steps
 
 Now that you have a basic decorator working, explore:
 
+- **[Assembly-Level Decorators](../usage/assembly-level-decorators.md)** - Apply decorators globally
 - **[Multiple Decorators](../usage/multiple-decorators.md)** - Stack decorators with ordering
 - **[Open Generics](../usage/open-generics.md)** - Decorate `IRepository<T>` patterns
 - **[Examples](../examples/index.md)** - Real-world decorator patterns

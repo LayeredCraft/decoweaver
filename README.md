@@ -15,7 +15,8 @@ DecoWeaver is a .NET incremental source generator that brings **compile-time dec
 - ⚡ **Zero runtime overhead** - No reflection or assembly scanning at startup
 - 🎯 **Type-safe** - Catches configuration errors at compile time
 - 🚀 **Fast** - Incremental generation with Roslyn
-- 🔧 **Simple** - Just add `[DecoratedBy<T>]` attributes
+- 🔧 **Simple** - Class-level or assembly-level decorator attributes
+- 🌐 **Flexible** - Apply decorators globally or per-implementation
 - 📦 **Clean** - Generates readable, debuggable interceptor code
 
 📚 **[View Full Documentation](https://layeredcraft.github.io/decoweaver/)**
@@ -70,6 +71,9 @@ For more examples including open generics, multiple decorators, and ordering, se
 
 ## Key Features
 
+- **Assembly-Level Decorators**: Apply decorators to all implementations from one place with `[assembly: DecorateService(...)]`
+- **Class-Level Decorators**: Apply decorators to specific implementations with `[DecoratedBy<T>]`
+- **Opt-Out Support**: Exclude specific decorators with `[DoNotDecorate]`
 - **Multiple Decorators**: Stack multiple decorators with explicit ordering
 - **Generic Type Decoration**: Decorate generic types like `IRepository<T>` with open generic decorators
 - **Type-Safe**: Compile-time validation catches errors early
