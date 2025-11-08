@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Assembly-level `[DecorateService(typeof(TService), typeof(TDecorator))]` attribute for applying decorators to all implementations of a service interface
-- `[DoNotDecorate(typeof(TDecorator))]` attribute for excluding specific decorators from individual implementations
+- `[SkipAssemblyDecoration]` attribute for opting out of all assembly-level decorators
+- `[DoNotDecorate(typeof(TDecorator))]` attribute for surgically excluding specific decorators from individual implementations
 - Merge/precedence logic for combining class-level and assembly-level decorators
 - Support for ordering assembly-level decorators via `Order` property
 - Open generic matching in assembly-level decorators and DoNotDecorate directives
@@ -27,10 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Details
 - Added `DecorateServiceAttribute` for assembly-level decoration
-- Added `DoNotDecorateAttribute` for fine-grained exclusion
+- Added `SkipAssemblyDecorationAttribute` for opting out of all assembly decorators
+- Added `DoNotDecorateAttribute` for surgical decorator exclusion
 - Added `ServiceDecoratedByProvider` for assembly attribute discovery
+- Added `SkipAssemblyDecoratorProvider` for skip directive discovery
 - Added `DoNotDecorateProvider` for opt-out directive discovery
-- Filtering logic added to BuildDecorationMap for DoNotDecorate support
+- Filtering logic added to BuildDecorationMap for both skip and do-not-decorate support
 - Comprehensive test coverage with snapshot verification
 
 ## [1.0.0-beta]

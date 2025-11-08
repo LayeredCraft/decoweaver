@@ -212,7 +212,41 @@ public class UserRepository : IRepository<User> { }
 
 ## Opting Out
 
-Use `[DoNotDecorate]` to exclude specific implementations from assembly-level decorators:
+DecoWeaver provides two ways to opt out of assembly-level decorators:
+
+### Skip All Assembly Decorators
+
+Use `[SkipAssemblyDecoration]` to completely bypass all assembly-level decorators:
+
+```csharp
+// GlobalUsings.cs
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>))]
+
+// UserRepository.cs - gets all three decorators
+public class UserRepository : IRepository<User> { }
+
+// OrderRepository.cs - skips ALL assembly decorators
+[SkipAssemblyDecoration]
+public class OrderRepository : IRepository<Order> { }
+
+// ProductRepository.cs - skips assembly, uses class-level instead
+[SkipAssemblyDecoration]
+[DecoratedBy<ValidationRepository<Product>>]
+public class ProductRepository : IRepository<Product> { }
+```
+
+**Result**:
+- `UserRepository`: Caching → Logging → Metrics (all assembly-level)
+- `OrderRepository`: No decorators
+- `ProductRepository`: Only Validation (class-level only)
+
+**When to use**: Performance-critical code, completely different decoration strategy, or clean slate needed.
+
+### Exclude Specific Decorators
+
+Use `[DoNotDecorate]` to surgically remove specific decorators while keeping others:
 
 ```csharp
 // GlobalUsings.cs
@@ -222,17 +256,29 @@ Use `[DoNotDecorate]` to exclude specific implementations from assembly-level de
 // UserRepository.cs - gets both decorators
 public class UserRepository : IRepository<User> { }
 
-// OrderRepository.cs - opts out of caching
+// OrderRepository.cs - opts out of caching only
 [DoNotDecorate(typeof(CachingRepository<>))]
 public class OrderRepository : IRepository<Order> { }
 
-// ProductRepository.cs - opts out of both
+// ProductRepository.cs - opts out of both (use SkipAssemblyDecoration instead)
 [DoNotDecorate(typeof(CachingRepository<>))]
 [DoNotDecorate(typeof(LoggingRepository<>))]
 public class ProductRepository : IRepository<Product> { }
 ```
 
-See [Opt-Out](opt-out.md) for complete details.
+**When to use**: Opt out of 1-2 specific decorators while keeping the rest.
+
+### Choosing Between Them
+
+| Attribute | Scope | Use When |
+|-----------|-------|----------|
+| `[SkipAssemblyDecoration]` | Removes ALL assembly decorators | Need clean slate or completely different strategy |
+| `[DoNotDecorate(typeof(...))]` | Removes specific decorator(s) | Need to exclude 1-2 decorators |
+
+!!! tip "Best Practice"
+    If you need to exclude most/all decorators, use `[SkipAssemblyDecoration]`. If you need to exclude just a few, use `[DoNotDecorate]`.
+
+See [Opt-Out](opt-out.md) for complete details and more examples.
 
 ## Registration
 

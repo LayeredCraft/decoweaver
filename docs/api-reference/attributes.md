@@ -417,6 +417,113 @@ This attribute is marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA"
 3. **Document your strategy** - Comment why decorators are applied assembly-wide
 4. **Centralize location** - Keep all assembly attributes in `GlobalUsings.cs` or similar
 
+## SkipAssemblyDecorationAttribute
+
+Class-level attribute for opting out of all assembly-level decorators.
+
+### Syntax
+
+```csharp
+[SkipAssemblyDecoration]
+```
+
+### Constructor
+
+```csharp
+public SkipAssemblyDecorationAttribute()
+```
+
+No parameters required.
+
+### Target
+
+```csharp
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+```
+
+- **Target**: `AttributeTargets.Class` - Applied to classes
+- **AllowMultiple**: `false` - Can only be applied once per class
+- **Inherited**: `false` - Not inherited
+
+### Examples
+
+#### Skip All Assembly Decorators
+
+```csharp
+// GlobalUsings.cs
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>))]
+
+// UserRepository.cs - gets all assembly decorators
+public class UserRepository : IRepository<User> { }
+
+// OrderRepository.cs - skips ALL assembly decorators
+[SkipAssemblyDecoration]
+public class OrderRepository : IRepository<Order> { }
+```
+
+**Result**:
+- `UserRepository`: Decorated with Logging, Caching, and Metrics
+- `OrderRepository`: No decorators applied
+
+#### Combined with Class-Level Decorators
+
+```csharp
+// Skip assembly decorators, use class-level instead
+[SkipAssemblyDecoration]
+[DecoratedBy<ValidationRepository<Product>>]
+public class ProductRepository : IRepository<Product>
+{
+    // Only ValidationRepository is applied (class-level)
+}
+```
+
+### Behavior
+
+At compile time, DecoWeaver:
+
+1. Discovers all `[SkipAssemblyDecoration]` attributes on classes
+2. Excludes ALL assembly-level decorators for that implementation
+3. **Still applies** any class-level `[DecoratedBy]` decorators
+4. Generates interceptor code with only class-level decorators
+
+### Scope
+
+- **Affects**: Only assembly-level `[DecorateService]` decorators
+- **Does NOT affect**: Class-level `[DecoratedBy]` decorators
+- **Isolation**: Only affects the specific class it's applied to
+
+### Use Cases
+
+1. **Performance-critical implementations** - Zero decorator overhead
+2. **Completely different decoration strategy** - Use class-level decorators instead
+3. **Clean slate needed** - Start fresh without assembly defaults
+4. **Legacy code** - Gradual migration to new decoration patterns
+
+### Compile-Time Behavior
+
+This attribute is marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA")]`, meaning:
+
+- The attribute does **not** exist in the compiled assembly
+- No runtime reflection is possible
+- Zero metadata footprint
+- Only affects compile-time code generation
+
+### Comparison with DoNotDecorate
+
+| Attribute | Scope | Use When |
+|-----------|-------|----------|
+| `[SkipAssemblyDecoration]` | Removes ALL assembly decorators | Need clean slate or most decorators excluded |
+| `[DoNotDecorate(typeof(...))]` | Removes specific decorator(s) | Need to exclude 1-2 decorators |
+
+### Best Practices
+
+1. **Use for clean slate** - When you want zero assembly decorators
+2. **Combine with class-level** - Apply implementation-specific decorators
+3. **Document why** - Add comments explaining the opt-out reason
+4. **Prefer DoNotDecorate for surgical exclusions** - If only removing 1-2 decorators
+
 ## DoNotDecorateAttribute
 
 Class-level attribute for excluding specific decorators from an implementation.

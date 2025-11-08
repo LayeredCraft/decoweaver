@@ -1,6 +1,59 @@
 # Opt-Out Mechanisms
 
-Sometimes you need to exclude specific decorators from certain implementations. DecoWeaver provides the `[DoNotDecorate]` attribute for fine-grained control over decorator application.
+Sometimes you need to exclude decorators from certain implementations. DecoWeaver provides two opt-out mechanisms:
+
+- **`[SkipAssemblyDecoration]`** - Opts out of ALL assembly-level decorators
+- **`[DoNotDecorate(typeof(...))]`** - Surgically removes specific decorators
+
+## SkipAssemblyDecoration Attribute
+
+Use `[SkipAssemblyDecoration]` to opt out of **all** assembly-level decorators while keeping class-level decorators:
+
+```csharp
+// GlobalUsings.cs - Apply multiple decorators to all repositories
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>))]
+
+// UserRepository.cs - Gets all three assembly-level decorators
+public class UserRepository : IRepository<User> { }
+
+// OrderRepository.cs - Completely opts out of assembly decorators
+[SkipAssemblyDecoration]
+public class OrderRepository : IRepository<Order> { }
+
+// ProductRepository.cs - Opts out of assembly, adds class-level
+[SkipAssemblyDecoration]
+[DecoratedBy<ValidationRepository<Product>>]
+public class ProductRepository : IRepository<Product> { }
+```
+
+**Result**:
+- `UserRepository`: Logging → Caching → Metrics (all assembly-level)
+- `OrderRepository`: No decorators at all
+- `ProductRepository`: Only ValidationRepository (class-level only)
+
+### When to Use SkipAssemblyDecoration
+
+**Use this when:**
+- The implementation needs to completely bypass all assembly-level decorators
+- You want a "clean slate" to apply only specific class-level decorators
+- The implementation has unique requirements incompatible with standard decorators
+- Performance-critical code that should have zero decorator overhead
+
+**Example - Performance Critical**:
+```csharp
+[assembly: DecorateService(typeof(IService<>), typeof(LoggingService<>))]
+[assembly: DecorateService(typeof(IService<>), typeof(MetricsService<>))]
+
+// High-throughput service - skip all observability
+[SkipAssemblyDecoration]
+public class HighThroughputService : IService<Data> { }
+```
+
+## DoNotDecorate Attribute
+
+Sometimes you need to exclude decorators from certain implementations. DecoWeaver provides the `[DoNotDecorate]` attribute for fine-grained control over decorator application.
 
 ## Basic Syntax
 
@@ -322,13 +375,59 @@ public class CleanRepository : IRepository<T> { }
 
 **Better approach**: Don't apply assembly-level decorators if most implementations don't need them.
 
+## Choosing Between Opt-Out Mechanisms
+
+| Attribute | Scope | Use Case |
+|-----------|-------|----------|
+| **`[SkipAssemblyDecoration]`** | Removes ALL assembly decorators | Clean slate, performance critical, completely different decoration strategy |
+| **`[DoNotDecorate(typeof(...))]`** | Removes specific decorator(s) | Opt out of 1-2 decorators while keeping others |
+
+### Decision Tree
+
+```
+Need to opt out?
+├─ Remove ALL assembly decorators?
+│  └─ Use [SkipAssemblyDecoration]
+│
+└─ Remove specific decorator(s)?
+   ├─ Remove 1-3 decorators? → Use [DoNotDecorate]
+   ├─ Remove most decorators? → Use [SkipAssemblyDecoration] + class-level
+   └─ Complex mix? → Reconsider assembly-level approach
+```
+
+### Examples
+
+**Scenario 1: Completely Different Decoration**
+```csharp
+// Most services get standard observability
+[assembly: DecorateService(typeof(IService<>), typeof(LoggingService<>))]
+[assembly: DecorateService(typeof(IService<>), typeof(MetricsService<>))]
+
+// This service has custom observability
+[SkipAssemblyDecoration]
+[DecoratedBy<CustomTracingService>]
+public class SpecialService : IService<Data> { }
+```
+
+**Scenario 2: Opt Out of One Decorator**
+```csharp
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>))]
+
+// Keep logging and metrics, skip caching
+[DoNotDecorate(typeof(CachingRepository<>))]
+public class OrderRepository : IRepository<Order> { }
+```
+
 ## Comparison: Class-Level vs Assembly-Level
 
 | Approach | When to Use |
 |----------|-------------|
 | **No assembly decorator** | Decorator applies to few implementations |
 | **Assembly decorator** | Decorator applies to most implementations |
-| **Assembly + DoNotDecorate** | Decorator applies to many, but not all |
+| **Assembly + SkipAssemblyDecoration** | Most use assembly, few need clean slate |
+| **Assembly + DoNotDecorate** | Most use assembly, some need surgical exclusions |
 | **Class-level only** | Implementation-specific decorators |
 
 ## See Also
