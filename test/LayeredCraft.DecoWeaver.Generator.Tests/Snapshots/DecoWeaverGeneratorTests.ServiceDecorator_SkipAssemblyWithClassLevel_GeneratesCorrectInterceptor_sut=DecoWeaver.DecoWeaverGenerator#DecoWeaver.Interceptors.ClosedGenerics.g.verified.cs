@@ -21,21 +21,21 @@ namespace DecoWeaver.Generated
     file static class DecoWeaverInterceptors
     {
         [InterceptsLocation(version: 1, data: "mT9RwGz5t9yYIeaAhDCX6L0AAABQcm9ncmFtLmNz")]
-        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::IRepository<User>, global::SpecialRepository<User>&gt;(IServiceCollection)</summary>
+        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::IRepository<global::User>, global::SpecialRepository<global::User>&gt;(IServiceCollection)</summary>
         internal static IServiceCollection AddScoped_0<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
             // Register the undecorated implementation as a keyed service
-            var key = DecoratorKeys.For(typeof(global::IRepository<User>), typeof(global::SpecialRepository<User>));
-            services.AddKeyedScoped<global::IRepository<User>, global::SpecialRepository<User>>(key);
+            var key = DecoratorKeys.For(typeof(global::IRepository<global::User>), typeof(global::SpecialRepository<global::User>));
+            services.AddKeyedScoped<global::IRepository<global::User>, global::SpecialRepository<global::User>>(key);
 
             // Register factory that applies decorators
-            services.AddScoped<global::IRepository<User>>(sp =>
+            services.AddScoped<global::IRepository<global::User>>(sp =>
             {
-                var current = (global::IRepository<User>)sp.GetRequiredKeyedService<global::IRepository<User>>(key)!;
+                var current = (global::IRepository<global::User>)sp.GetRequiredKeyedService<global::IRepository<global::User>>(key)!;
                 // Compose decorators (innermost to outermost)
-                current = (global::IRepository<User>)DecoratorFactory.Create(sp, typeof(global::IRepository<User>), typeof(global::ValidationRepository<>), current);
+                current = (global::IRepository<global::User>)DecoratorFactory.Create(sp, typeof(global::IRepository<global::User>), typeof(global::ValidationRepository<>), current);
                 return current;
             });
             return services;

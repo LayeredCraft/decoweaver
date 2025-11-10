@@ -21,44 +21,44 @@ namespace DecoWeaver.Generated
     file static class DecoWeaverInterceptors
     {
         [InterceptsLocation(version: 1, data: "kh94cO6krxrz8/UKmI0o21kBAABQcm9ncmFtLmNz")]
-        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::DecoWeaver.Sample.IRepository<Order>, global::DecoWeaver.Sample.DynamoDbRepository<Order>&gt;(IServiceCollection)</summary>
+        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::DecoWeaver.Sample.IRepository<global::Order>, global::DecoWeaver.Sample.DynamoDbRepository<global::Order>&gt;(IServiceCollection)</summary>
         internal static IServiceCollection AddScoped_0<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
             // Register the undecorated implementation as a keyed service
-            var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<Order>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<Order>));
-            services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<Order>, global::DecoWeaver.Sample.DynamoDbRepository<Order>>(key);
+            var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::Order>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<global::Order>));
+            services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::Order>, global::DecoWeaver.Sample.DynamoDbRepository<global::Order>>(key);
 
             // Register factory that applies decorators
-            services.AddScoped<global::DecoWeaver.Sample.IRepository<Order>>(sp =>
+            services.AddScoped<global::DecoWeaver.Sample.IRepository<global::Order>>(sp =>
             {
-                var current = (global::DecoWeaver.Sample.IRepository<Order>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<Order>>(key)!;
+                var current = (global::DecoWeaver.Sample.IRepository<global::Order>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::Order>>(key)!;
                 // Compose decorators (innermost to outermost)
-                current = (global::DecoWeaver.Sample.IRepository<Order>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<Order>), typeof(global::DecoWeaver.Sample.CachingRepository<>), current);
-                current = (global::DecoWeaver.Sample.IRepository<Order>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<Order>), typeof(global::DecoWeaver.Sample.LoggingRepository<>), current);
+                current = (global::DecoWeaver.Sample.IRepository<global::Order>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<global::Order>), typeof(global::DecoWeaver.Sample.CachingRepository<>), current);
+                current = (global::DecoWeaver.Sample.IRepository<global::Order>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<global::Order>), typeof(global::DecoWeaver.Sample.LoggingRepository<>), current);
                 return current;
             });
             return services;
         }
 
         [InterceptsLocation(version: 1, data: "kh94cO6krxrz8/UKmI0o2xMBAABQcm9ncmFtLmNz")]
-        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::DecoWeaver.Sample.IRepository<Customer>, global::DecoWeaver.Sample.DynamoDbRepository<Customer>&gt;(IServiceCollection)</summary>
+        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>&gt;(IServiceCollection)</summary>
         internal static IServiceCollection AddScoped_1<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
             // Register the undecorated implementation as a keyed service
-            var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<Customer>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<Customer>));
-            services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<Customer>, global::DecoWeaver.Sample.DynamoDbRepository<Customer>>(key);
+            var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>));
+            services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>>(key);
 
             // Register factory that applies decorators
-            services.AddScoped<global::DecoWeaver.Sample.IRepository<Customer>>(sp =>
+            services.AddScoped<global::DecoWeaver.Sample.IRepository<global::Customer>>(sp =>
             {
-                var current = (global::DecoWeaver.Sample.IRepository<Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<Customer>>(key)!;
+                var current = (global::DecoWeaver.Sample.IRepository<global::Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::Customer>>(key)!;
                 // Compose decorators (innermost to outermost)
-                current = (global::DecoWeaver.Sample.IRepository<Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<Customer>), typeof(global::DecoWeaver.Sample.CachingRepository<>), current);
-                current = (global::DecoWeaver.Sample.IRepository<Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<Customer>), typeof(global::DecoWeaver.Sample.LoggingRepository<>), current);
+                current = (global::DecoWeaver.Sample.IRepository<global::Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.CachingRepository<>), current);
+                current = (global::DecoWeaver.Sample.IRepository<global::Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.LoggingRepository<>), current);
                 return current;
             });
             return services;

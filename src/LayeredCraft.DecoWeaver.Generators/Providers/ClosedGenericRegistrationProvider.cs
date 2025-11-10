@@ -68,8 +68,9 @@ internal static class ClosedGenericRegistrationProvider
         if (il is null) return null;
 
         // Generate fully qualified names for the closed types
-        var serviceFqn = $"global::{svc.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted))}";
-        var implFqn = $"global::{impl.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted))}";
+        // FullyQualifiedFormat includes global:: for ALL types including nested generic type arguments
+        var serviceFqn = svc.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var implFqn = impl.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         return new ClosedGenericRegistration(
             ServiceDef: svc.ToTypeId().Definition,
