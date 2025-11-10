@@ -112,7 +112,7 @@ public interface IAssemblyInterface<T>
     void DoSomething(T item);
 }
 
-public sealed class ConcreateClass<T> : IAssemblyInterface<T>
+public sealed class ConcreteClass<T> : IAssemblyInterface<T>
 {
     public void DoSomething(T item)
     {
