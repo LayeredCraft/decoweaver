@@ -276,4 +276,134 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_SingleDecorator_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/023_ServiceDecorator_SingleDecorator/Repository.cs",
+                "Cases/023_ServiceDecorator_SingleDecorator/Program.cs",
+                "Cases/023_ServiceDecorator_SingleDecorator/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_MultipleOrdered_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/024_ServiceDecorator_MultipleOrdered/Repository.cs",
+                "Cases/024_ServiceDecorator_MultipleOrdered/Program.cs",
+                "Cases/024_ServiceDecorator_MultipleOrdered/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_WithSkipAssembly_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/025_ServiceDecorator_WithSkipAssembly/Repository.cs",
+                "Cases/025_ServiceDecorator_WithSkipAssembly/Program.cs",
+                "Cases/025_ServiceDecorator_WithSkipAssembly/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task ServiceDecorator_SkipAssemblyWithClassLevel_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/026_SkipAssemblyWithClassLevel/Repository.cs",
+                "Cases/026_SkipAssemblyWithClassLevel/Program.cs",
+                "Cases/026_SkipAssemblyWithClassLevel/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task MergePrecedence_Deduplication_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/027_MergePrecedence_Deduplication/Repository.cs",
+                "Cases/027_MergePrecedence_Deduplication/Program.cs",
+                "Cases/027_MergePrecedence_Deduplication/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task MergePrecedence_SortOrder_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/028_MergePrecedence_SortOrder/Repository.cs",
+                "Cases/028_MergePrecedence_SortOrder/Program.cs",
+                "Cases/028_MergePrecedence_SortOrder/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_RemovesAssemblyDecorator_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/029_DoNotDecorate_RemovesAssemblyDecorator/Repository.cs",
+                "Cases/029_DoNotDecorate_RemovesAssemblyDecorator/Program.cs",
+                "Cases/029_DoNotDecorate_RemovesAssemblyDecorator/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_Multiple_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/030_DoNotDecorate_Multiple/Repository.cs",
+                "Cases/030_DoNotDecorate_Multiple/Program.cs",
+                "Cases/030_DoNotDecorate_Multiple/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_OpenGenericMatching_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/031_DoNotDecorate_OpenGenericMatching/Repository.cs",
+                "Cases/031_DoNotDecorate_OpenGenericMatching/Program.cs",
+                "Cases/031_DoNotDecorate_OpenGenericMatching/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task DoNotDecorate_IsolationCheck_GeneratesCorrectInterceptor(DecoWeaverGenerator sut)
+    {
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/032_DoNotDecorate_IsolationCheck/Repository.cs",
+                "Cases/032_DoNotDecorate_IsolationCheck/Program.cs",
+                "Cases/032_DoNotDecorate_IsolationCheck/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }

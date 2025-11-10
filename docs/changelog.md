@@ -10,6 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - No changes yet
 
+## [1.0.1-beta] - 2025-01-XX
+
+### Added
+- Assembly-level `[DecorateService(typeof(TService), typeof(TDecorator))]` attribute for applying decorators to all implementations of a service interface
+- `[SkipAssemblyDecoration]` attribute for opting out of all assembly-level decorators
+- `[DoNotDecorate(typeof(TDecorator))]` attribute for surgically excluding specific decorators from individual implementations
+- Merge/precedence logic for combining class-level and assembly-level decorators
+- Support for ordering assembly-level decorators via `Order` property
+- Open generic matching in assembly-level decorators and DoNotDecorate directives
+- 4 new test cases (029-032) covering assembly-level decorator scenarios
+
+### Changed
+- Decorator discovery pipeline now includes assembly-level attribute streams
+- BuildDecorationMap now merges and deduplicates decorators from multiple sources
+- Documentation restructured to include assembly-level decorator guides
+
+### Technical Details
+- Added `DecorateServiceAttribute` for assembly-level decoration
+- Added `SkipAssemblyDecorationAttribute` for opting out of all assembly decorators
+- Added `DoNotDecorateAttribute` for surgical decorator exclusion
+- Added `ServiceDecoratedByProvider` for assembly attribute discovery
+- Added `SkipAssemblyDecoratorProvider` for skip directive discovery
+- Added `DoNotDecorateProvider` for opt-out directive discovery
+- Filtering logic added to BuildDecorationMap for both skip and do-not-decorate support
+- Comprehensive test coverage with snapshot verification
+
 ## [1.0.0-beta]
 
 ### Added
@@ -103,7 +129,6 @@ Features marked for deprecation:
 Planned features for future releases:
 
 ### Under Consideration
-- Assembly-level `[DecorateService]` attribute (See [Issue #2](https://github.com/layeredcraft/decoweaver/issues/2))
 - Decorator composition helpers
 - Performance profiling decorators
 - Additional diagnostic analyzers

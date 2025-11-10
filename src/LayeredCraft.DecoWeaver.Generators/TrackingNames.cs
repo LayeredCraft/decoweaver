@@ -13,10 +13,20 @@ public static class TrackingNames
     public const string Attr_NonGeneric_Transform     = nameof(Attr_NonGeneric_Transform);
     public const string Attr_Generic_FilterNotNull    = nameof(Attr_Generic_FilterNotNull);
     public const string Attr_NonGeneric_FilterNotNull = nameof(Attr_NonGeneric_FilterNotNull);
+    public const string Attr_ServiceDecoration_Transform = nameof(Attr_ServiceDecoration_Transform);
+    public const string Attr_ServiceDecoration_FilterNotNull = nameof(Attr_ServiceDecoration_FilterNotNull);
+    public const string Attr_ServiceDecoration_Stream = nameof(Attr_ServiceDecoration_Stream);
+    public const string Attr_SkipAssemblyDecoration_Transform = nameof(Attr_SkipAssemblyDecoration_Transform);
+    public const string Attr_SkipAssemblyDecoration_FilterNotNull = nameof(Attr_SkipAssemblyDecoration_FilterNotNull);
+    public const string Attr_SkipAssemblyDecoration_Stream = nameof(Attr_SkipAssemblyDecoration_Stream);
+    public const string Attr_DoNotDecorate_Transform = nameof(Attr_DoNotDecorate_Transform);
+    public const string Attr_DoNotDecorate_FilterNotNull = nameof(Attr_DoNotDecorate_FilterNotNull);
+    public const string Attr_DoNotDecorate_Stream = nameof(Attr_DoNotDecorate_Stream);
 
     public const string Attr_Generic_Stream           = nameof(Attr_Generic_Stream);
     public const string Attr_NonGeneric_Stream        = nameof(Attr_NonGeneric_Stream);
     public const string Attr_All_Combined             = nameof(Attr_All_Combined);
+    public const string Attr_Service_Collected        = nameof(Attr_Service_Collected);
 
     // Gated flow
     public const string Gate_Decorations              = nameof(Gate_Decorations);
@@ -32,6 +42,8 @@ public static class TrackingNames
     public const string Reg_ClosedGeneric_Transform = nameof(Reg_ClosedGeneric_Transform);
     public const string Reg_ClosedGeneric_Filter   = nameof(Reg_ClosedGeneric_Filter);
     public const string Reg_ClosedGeneric_Collect = nameof(Reg_ClosedGeneric_Collect);
+    public const string Reg_SkipAssembly_Collect = nameof(Reg_SkipAssembly_Collect);
+    public const string Reg_DoNotDecorate_Collect = nameof(Reg_DoNotDecorate_Collect);
 
     // Emission
     public const string Emit_ClosedGenericInterceptors = nameof(Emit_ClosedGenericInterceptors);
@@ -39,4 +51,7 @@ public static class TrackingNames
     // Optional gate per-stream
     public const string Gate_Decorations_Generic    = nameof(Gate_Decorations_Generic);
     public const string Gate_Decorations_NonGeneric = nameof(Gate_Decorations_NonGeneric);
+    public const string Gate_Decorations_Service = nameof(Gate_Decorations_Service);
+    public const string Gate_Decorations_SkipAssembly = nameof(Gate_Decorations_SkipAssembly);
+    public const string Gate_Decorations_DoNotDecorate = nameof(Gate_Decorations_DoNotDecorate);
 }

@@ -47,7 +47,7 @@ internal static class DecoratedByNonGenericProvider
 
             // Order can be either ctor arg #1 (int) or named arg "Order"
             var order = AttributeHelpers.GetIntNamedArg(attr, "Order", defaultValue: 0);
-            if (order == 0 && attr.ConstructorArguments.Length >= 2 && attr.ConstructorArguments[1].Value is int ctorOrder)
+            if (order == 0 && attr.ConstructorArguments is [_, { Value: int ctorOrder } _, ..])
                 order = ctorOrder;
 
             // First ctor arg is the Type
@@ -61,8 +61,7 @@ internal static class DecoratedByNonGenericProvider
                 ImplementationDef: implDef.ToTypeId().Definition,
                 DecoratorDef: decoratorSym.ToTypeId().Definition,
                 Order: order,
-                IsInterceptable: true,
-                Location: ctx.TargetNode.ToLocationId());
+                IsInterceptable: true);
         }
     }
 }

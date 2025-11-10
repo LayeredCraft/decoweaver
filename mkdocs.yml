@@ -111,6 +111,7 @@ nav:
     - Order & Nesting: core-concepts/order-and-nesting.md
   - Usage:
     - Class-Level Decorators: usage/class-level-decorators.md
+    - Assembly-Level Decorators: usage/assembly-level-decorators.md
     - Open Generics: usage/open-generics.md
     - Multiple Decorators: usage/multiple-decorators.md
     - Opt-Out: usage/opt-out.md

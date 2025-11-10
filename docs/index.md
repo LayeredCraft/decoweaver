@@ -10,8 +10,10 @@
 
 - **⚡ Zero Runtime Overhead**: Decorators applied at compile time using C# interceptors
 - **🎯 Type-Safe**: Full compile-time validation with IntelliSense support
-- **🔧 Simple API**: Just add `[DecoratedBy<T>]` attributes to your classes
+- **🔧 Simple API**: Apply decorators with `[DecoratedBy<T>]` or `[assembly: DecorateService(...)]`
+- **🌐 Assembly-Level Decorators**: Apply decorators to all implementations from one place
 - **🚀 Generic Type Decoration**: Decorate generic types like `IRepository<T>` with open generic decorators
+- **🚫 Opt-Out Support**: Exclude specific decorators with `[DoNotDecorate]`
 - **📦 No Runtime Dependencies**: Only build-time source generator dependency
 - **🔗 Order Control**: Explicit decorator ordering via `Order` property
 - **✨ Clean Generated Code**: Readable, debuggable interceptor code

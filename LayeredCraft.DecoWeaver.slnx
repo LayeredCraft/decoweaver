@@ -41,6 +41,7 @@
     <File Path="docs\getting-started\quick-start.md" />
   </Folder>
   <Folder Name="/docs/usage/">
+    <File Path="docs\usage\assembly-level-decorators.md" />
     <File Path="docs\usage\class-level-decorators.md" />
     <File Path="docs\usage\multiple-decorators.md" />
     <File Path="docs\usage\open-generics.md" />

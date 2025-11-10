@@ -284,8 +284,364 @@ public class OrderService : IOrderService { }
 [DecoratedBy(typeof(LoggingRepository))]
 ```
 
+## DecorateServiceAttribute
+
+Assembly-level attribute for applying decorators to all implementations of a service interface.
+
+### Syntax
+
+```csharp
+[assembly: DecorateService(typeof(TService), typeof(TDecorator))]
+[assembly: DecorateService(typeof(TService), typeof(TDecorator), Order = int)]
+```
+
+### Constructor
+
+```csharp
+public DecorateServiceAttribute(Type serviceType, Type decoratorType)
+```
+
+### Parameters
+
+- `serviceType`: The service interface type (can be open generic like `IRepository<>`)
+- `decoratorType`: The decorator type to apply (can be open generic like `CachingRepository<>`)
+
+### Properties
+
+#### Order
+
+```csharp
+public int Order { get; set; }
+```
+
+Controls the order when multiple assembly-level decorators are applied. Lower values are applied first (closer to the implementation).
+
+**Default**: `0`
+
+### Target
+
+```csharp
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
+```
+
+- **Target**: `AttributeTargets.Assembly` - Applied to assemblies
+- **AllowMultiple**: `true` - Multiple decorators can be defined
+- **Inherited**: `false` - Not inherited
+
+### Examples
+
+#### Basic Usage
+
+```csharp
+using DecoWeaver.Attributes;
+
+// Apply logging to all IRepository<T> implementations
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
+```
+
+#### Multiple Decorators
+
+```csharp
+// Apply logging, caching, and metrics to all repositories
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>), Order = 1)]
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>), Order = 2)]
+[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>), Order = 3)]
+```
+
+#### Non-Generic Services
+
+```csharp
+// Apply to non-generic service
+[assembly: DecorateService(typeof(IUserService), typeof(LoggingUserService))]
+```
+
+#### Mixed Generic/Non-Generic
+
+```csharp
+// Open generic service, closed generic decorator
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingUserRepository))]
+```
+
+### Behavior
+
+At compile time, DecoWeaver:
+
+1. Discovers all `[assembly: DecorateService(...)]` attributes
+2. Finds DI registrations matching the service type
+3. Merges with class-level `[DecoratedBy]` attributes
+4. Generates interceptor code applying all decorators in order
+
+### Type Matching
+
+Assembly-level decorators match registrations based on:
+
+- **Open generic** `IRepository<>` matches all closed registrations (`IRepository<User>`, `IRepository<Order>`, etc.)
+- **Closed generic** `IRepository<User>` matches only `IRepository<User>`
+- **Non-generic** `IUserService` matches exactly
+
+### Combining with Class-Level
+
+Assembly-level and class-level decorators are merged:
+
+```csharp
+// GlobalUsings.cs
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>), Order = 10)]
+
+// UserRepository.cs
+[DecoratedBy<ValidationRepository<User>>(Order = 5)]
+public class UserRepository : IRepository<User> { }
+```
+
+**Resulting chain**: `LoggingRepository<User>` → `ValidationRepository<User>` → `UserRepository`
+
+### Compile-Time Behavior
+
+This attribute is marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA")]`, meaning:
+
+- The attribute does **not** exist in the compiled assembly
+- No runtime reflection is possible
+- Zero metadata footprint
+- Only affects compile-time code generation
+
+### Requirements
+
+1. **Decorator must implement service interface**
+2. **Decorator must have constructor accepting interface as first parameter**
+3. **Only intercepts closed generic registrations** (`AddScoped<IRepo<T>, Impl<T>>()`)
+4. **Does not intercept open generic registrations** (`AddScoped(typeof(IRepo<>), typeof(Impl<>))`)
+
+### Best Practices
+
+1. **Group by concern** - Keep related decorators together
+2. **Use gaps in Order** - Reserve ranges (10-19 for logging, 20-29 for caching, etc.)
+3. **Document your strategy** - Comment why decorators are applied assembly-wide
+4. **Centralize location** - Keep all assembly attributes in `GlobalUsings.cs` or similar
+
+## SkipAssemblyDecorationAttribute
+
+Class-level attribute for opting out of all assembly-level decorators.
+
+### Syntax
+
+```csharp
+[SkipAssemblyDecoration]
+```
+
+### Constructor
+
+```csharp
+public SkipAssemblyDecorationAttribute()
+```
+
+No parameters required.
+
+### Target
+
+```csharp
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+```
+
+- **Target**: `AttributeTargets.Class` - Applied to classes
+- **AllowMultiple**: `false` - Can only be applied once per class
+- **Inherited**: `false` - Not inherited
+
+### Examples
+
+#### Skip All Assembly Decorators
+
+```csharp
+// GlobalUsings.cs
+[assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+[assembly: DecorateService(typeof(IRepository<>), typeof(MetricsRepository<>))]
+
+// UserRepository.cs - gets all assembly decorators
+public class UserRepository : IRepository<User> { }
+
+// OrderRepository.cs - skips ALL assembly decorators
+[SkipAssemblyDecoration]
+public class OrderRepository : IRepository<Order> { }
+```
+
+**Result**:
+- `UserRepository`: Decorated with Logging, Caching, and Metrics
+- `OrderRepository`: No decorators applied
+
+#### Combined with Class-Level Decorators
+
+```csharp
+// Skip assembly decorators, use class-level instead
+[SkipAssemblyDecoration]
+[DecoratedBy<ValidationRepository<Product>>]
+public class ProductRepository : IRepository<Product>
+{
+    // Only ValidationRepository is applied (class-level)
+}
+```
+
+### Behavior
+
+At compile time, DecoWeaver:
+
+1. Discovers all `[SkipAssemblyDecoration]` attributes on classes
+2. Excludes ALL assembly-level decorators for that implementation
+3. **Still applies** any class-level `[DecoratedBy]` decorators
+4. Generates interceptor code with only class-level decorators
+
+### Scope
+
+- **Affects**: Only assembly-level `[DecorateService]` decorators
+- **Does NOT affect**: Class-level `[DecoratedBy]` decorators
+- **Isolation**: Only affects the specific class it's applied to
+
+### Use Cases
+
+1. **Performance-critical implementations** - Zero decorator overhead
+2. **Completely different decoration strategy** - Use class-level decorators instead
+3. **Clean slate needed** - Start fresh without assembly defaults
+4. **Legacy code** - Gradual migration to new decoration patterns
+
+### Compile-Time Behavior
+
+This attribute is marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA")]`, meaning:
+
+- The attribute does **not** exist in the compiled assembly
+- No runtime reflection is possible
+- Zero metadata footprint
+- Only affects compile-time code generation
+
+### Comparison with DoNotDecorate
+
+| Attribute | Scope | Use When |
+|-----------|-------|----------|
+| `[SkipAssemblyDecoration]` | Removes ALL assembly decorators | Need clean slate or most decorators excluded |
+| `[DoNotDecorate(typeof(...))]` | Removes specific decorator(s) | Need to exclude 1-2 decorators |
+
+### Best Practices
+
+1. **Use for clean slate** - When you want zero assembly decorators
+2. **Combine with class-level** - Apply implementation-specific decorators
+3. **Document why** - Add comments explaining the opt-out reason
+4. **Prefer DoNotDecorate for surgical exclusions** - If only removing 1-2 decorators
+
+## DoNotDecorateAttribute
+
+Class-level attribute for excluding specific decorators from an implementation.
+
+### Syntax
+
+```csharp
+[DoNotDecorate(typeof(TDecorator))]
+```
+
+### Constructor
+
+```csharp
+public DoNotDecorateAttribute(Type decoratorType)
+```
+
+### Parameters
+
+- `decoratorType`: The decorator type to exclude (can be open generic like `CachingRepository<>`)
+
+### Target
+
+```csharp
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+```
+
+- **Target**: `AttributeTargets.Class` - Applied to classes
+- **AllowMultiple**: `true` - Multiple decorators can be excluded
+- **Inherited**: `false` - Not inherited
+
+### Examples
+
+#### Opt Out of Assembly-Level Decorator
+
+```csharp
+// GlobalUsings.cs
+[assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+
+// UserRepository.cs - gets caching
+public class UserRepository : IRepository<User> { }
+
+// OrderRepository.cs - opts out of caching
+[DoNotDecorate(typeof(CachingRepository<>))]
+public class OrderRepository : IRepository<Order> { }
+```
+
+#### Multiple Opt-Outs
+
+```csharp
+// Opt out of caching and metrics
+[DoNotDecorate(typeof(CachingRepository<>))]
+[DoNotDecorate(typeof(MetricsRepository<>))]
+public class OrderRepository : IRepository<Order> { }
+```
+
+#### Open Generic Matching
+
+```csharp
+// Open generic in DoNotDecorate matches all closed generics
+[DoNotDecorate(typeof(CachingRepository<>))]  // Matches CachingRepository<User>
+public class UserRepository : IRepository<User> { }
+```
+
+### Behavior
+
+At compile time, DecoWeaver:
+
+1. Discovers all `[DoNotDecorate]` attributes on classes
+2. Collects decorators from class-level and assembly-level sources
+3. **Filters out** decorators matching the `DoNotDecorate` directives
+4. Generates interceptor code with only remaining decorators
+
+### Type Matching Rules
+
+- **Open generic** `typeof(Decorator<>)` matches all closed variants
+- **Closed generic** `typeof(Decorator<User>)` matches only that specific type
+- **Non-generic** types match exactly
+- Type matching is by **definition** (ignoring type arguments)
+
+### Isolation
+
+`[DoNotDecorate]` only affects the specific class it's applied to:
+
+```csharp
+[DoNotDecorate(typeof(CachingRepository<>))]
+public class OrderRepository : IRepository<Order> { }
+
+// UserRepository still gets caching (not affected)
+public class UserRepository : IRepository<User> { }
+```
+
+### Use Cases
+
+1. **Excluding assembly-level decorators** - Primary use case
+2. **Performance-critical code** - Remove observability overhead
+3. **Implementation-specific constraints** - Special requirements
+4. **Testing implementations** - Simplify test setup
+
+### Compile-Time Behavior
+
+This attribute is marked with `[Conditional("DECOWEAVER_EMIT_ATTRIBUTE_METADATA")]`, meaning:
+
+- The attribute does **not** exist in the compiled assembly
+- No runtime reflection is possible
+- Zero metadata footprint
+- Only affects compile-time code generation
+
+### Best Practices
+
+1. **Use sparingly** - If many implementations opt out, reconsider assembly-level decorator
+2. **Document why** - Comment explaining the opt-out reason
+3. **Exact type match** - Ensure decorator type exactly matches what's being applied
+4. **Prefer class-level for specific needs** - Use assembly-level for cross-cutting concerns
+
 ## See Also
 
 - [Class-Level Decorators](../usage/class-level-decorators.md) - Usage guide
+- [Assembly-Level Decorators](../usage/assembly-level-decorators.md) - Assembly-wide decoration
+- [Opt-Out](../usage/opt-out.md) - Excluding decorators
 - [Multiple Decorators](../usage/multiple-decorators.md) - Stacking decorators
 - [Order and Nesting](../core-concepts/order-and-nesting.md) - Understanding order

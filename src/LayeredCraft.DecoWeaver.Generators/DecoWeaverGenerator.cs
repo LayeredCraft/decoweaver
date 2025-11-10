@@ -16,7 +16,10 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
         // --- Language version gate -----------------------------------------
         var csharpSufficient = context.CompilationProvider
             .Select(static (compilation, _) =>
-                compilation is CSharpCompilation { LanguageVersion: LanguageVersion.Default or >= LanguageVersion.CSharp11 })
+                compilation is CSharpCompilation
+                {
+                    LanguageVersion: LanguageVersion.Default or >= LanguageVersion.CSharp11
+                })
             .WithTrackingName(TrackingNames.Settings_LanguageVersionGate);
 
         context.RegisterSourceOutput(
@@ -34,7 +37,8 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
                 AttributeNames.GenericDecoratedByAttribute,
                 predicate: DecoratedByGenericProvider.Predicate,
                 transform: DecoratedByGenericProvider.TransformMultiple)
-            .SelectMany(static (decorators, _) => decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
+            .SelectMany(static (decorators, _) =>
+                decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
             .WithTrackingName(TrackingNames.Attr_Generic_Transform)
             .Where(static x => x is not null)
             .WithTrackingName(TrackingNames.Attr_Generic_FilterNotNull)
@@ -48,12 +52,62 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
                 AttributeNames.DecoratedByAttribute,
                 predicate: DecoratedByNonGenericProvider.Predicate,
                 transform: DecoratedByNonGenericProvider.TransformMultiple)
-            .SelectMany(static (decorators, _) => decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
+            .SelectMany(static (decorators, _) =>
+                decorators.ToImmutableArray()) // Flatten IEnumerable<DecoratorToIntercept?>
             .WithTrackingName(TrackingNames.Attr_NonGeneric_Transform)
             .Where(static x => x is not null)
             .WithTrackingName(TrackingNames.Attr_NonGeneric_FilterNotNull)
             .Select(static (x, _) => x!.Value)
             .WithTrackingName(TrackingNames.Attr_NonGeneric_Stream);
+
+        // --- [assembly: DecorateService(...)] stream ----------------------
+        // Discovers assembly-level decorator declarations that apply to all implementations
+        // of a service type within the same assembly. This provides default decoration rules
+        // that can be overridden or opted-out of at the class level.
+        var serviceDecorations = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AttributeNames.ServiceDecoratedByAttribute,
+                predicate: ServiceDecoratedByProvider.Predicate,
+                transform: ServiceDecoratedByProvider.TransformMultiple)
+            .SelectMany(static (decorations, _) =>
+                decorations.ToImmutableArray()) // Flatten IEnumerable<ServiceDecoration?>
+            .WithTrackingName(TrackingNames.Attr_ServiceDecoration_Transform)
+            .Where(static x => x is not null)
+            .WithTrackingName(TrackingNames.Attr_ServiceDecoration_FilterNotNull)
+            .Select(static (x, _) => x!.Value)
+            .WithTrackingName(TrackingNames.Attr_ServiceDecoration_Stream);
+
+        // --- [SkipAssemblyDecorators] stream --------------------------------
+        // Discovers implementations that have opted out of all assembly-level decorations.
+        // These markers are used to filter out assembly-level rules during the merge phase,
+        // while still allowing class-level decorations to be applied.
+        var skipAssemblyDecorations = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AttributeNames.SkipAssemblyDecorationAttribute,
+                predicate: SkipAssemblyDecoratorProvider.Predicate,
+                transform: SkipAssemblyDecoratorProvider.Transform)
+            .WithTrackingName(TrackingNames.Attr_SkipAssemblyDecoration_Transform)
+            .Where(static x => x is not null)
+            .WithTrackingName(TrackingNames.Attr_SkipAssemblyDecoration_FilterNotNull)
+            .Select(static (x, _) => x!.Value)
+            .WithTrackingName(TrackingNames.Attr_SkipAssemblyDecoration_Stream);
+
+        // --- [DoNotDecorate(...)] stream ---------------------------------
+        // Discovers implementations that want to exclude specific decorators from the merged set.
+        // These directives are applied after deduplication but before final emission.
+        // Matching is by TypeDefId (definition only), so open generic decorator types work correctly.
+        var doNotDecorateDirectives = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AttributeNames.DoNotDecorateAttribute,
+                predicate: DoNotDecorateProvider.Predicate,
+                transform: DoNotDecorateProvider.TransformMultiple)
+            .SelectMany(static (directives, _) =>
+                directives.ToImmutableArray()) // Flatten IEnumerable<DoNotDecorateDirective?>
+            .WithTrackingName(TrackingNames.Attr_DoNotDecorate_Transform)
+            .Where(static x => x is not null)
+            .WithTrackingName(TrackingNames.Attr_DoNotDecorate_FilterNotNull)
+            .Select(static (x, _) => x!.Value)
+            .WithTrackingName(TrackingNames.Attr_DoNotDecorate_Stream);
 
         // ✅ Gate each VALUES stream before Collect()
         var genericGated = genericDecorations
@@ -68,10 +122,33 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .Select(static (pair, _) => pair.Left)
             .WithTrackingName(TrackingNames.Gate_Decorations_NonGeneric);
 
-        // Collect both decoration streams
+        var serviceGated = serviceDecorations
+            .Combine(csharpSufficient)
+            .Where(static pair => pair.Right)
+            .Select(static (pair, _) => pair.Left)
+            .WithTrackingName(TrackingNames.Gate_Decorations_Service);
+
+        var skipAssemblyGated = skipAssemblyDecorations
+            .Combine(csharpSufficient)
+            .Where(static pair => pair.Right)
+            .Select(static (pair, _) => pair.Left)
+            .WithTrackingName(TrackingNames.Gate_Decorations_SkipAssembly);
+
+        var doNotDecorateGated = doNotDecorateDirectives
+            .Combine(csharpSufficient)
+            .Where(static pair => pair.Right)
+            .Select(static (pair, _) => pair.Left)
+            .WithTrackingName(TrackingNames.Gate_Decorations_DoNotDecorate);
+
+        // Collect class-level decorations (generic + non-generic combined)
         var allDecorations = genericGated.Collect()
             .Combine(nonGenericGated.Collect())
             .WithTrackingName(TrackingNames.Attr_All_Combined);
+
+        // Collect assembly-level service decorations separately (to be matched against registrations)
+        var serviceDecosCollected = serviceGated.Collect()
+            .WithTrackingName(TrackingNames.Attr_Service_Collected);
+
 
         // --- Closed generic registration discovery -----------------------
         var closedGenericRegs = context.SyntaxProvider
@@ -91,20 +168,60 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .Collect()
             .WithTrackingName(TrackingNames.Reg_ClosedGeneric_Collect);
 
+        var skipAssemblyCollected = skipAssemblyGated
+            .Collect()
+            .WithTrackingName(TrackingNames.Reg_SkipAssembly_Collect);
+
+        var doNotDecorateCollected = doNotDecorateGated
+            .Collect()
+            .WithTrackingName(TrackingNames.Reg_DoNotDecorate_Collect);
+
+        // Combine all inputs using Select to create a clean named tuple structure
+        var allInputs = allDecorations
+            .Combine(serviceDecosCollected)
+            .Combine(skipAssemblyCollected)
+            .Combine(doNotDecorateCollected)
+            .Combine(closedGenericRegsCollected)
+            .Select(static (data, _) => (
+                GenericDecos: data.Left.Left.Left.Left.Left,
+                NonGenericDecos: data.Left.Left.Left.Left.Right,
+                ServiceDecos: data.Left.Left.Left.Right,
+                SkipMarkers: data.Left.Left.Right,
+                DoNotDecorateDirectives: data.Left.Right,
+                Registrations: data.Right
+            ));
+
         // Emit once we have decorations + registrations
         context.RegisterSourceOutput(
-            allDecorations.Combine(closedGenericRegsCollected)
-                .WithTrackingName(TrackingNames.Emit_ClosedGenericInterceptors),
-            static (spc, pair) =>
+            allInputs.WithTrackingName(TrackingNames.Emit_ClosedGenericInterceptors),
+            (spc, inputs) =>
             {
-                var (genericDecos, nonGenericDecos) = pair.Left;
-                var regs = pair.Right;
+                // Merge class-level decorations (generic + non-generic)
+                var classDecos = inputs.GenericDecos.Concat(inputs.NonGenericDecos).ToImmutableArray();
 
-                var allDecos = genericDecos.AddRange(nonGenericDecos);
-                var byImpl = BuildDecorationMap(allDecos); // Dictionary<TypeDefId, EquatableArray<TypeDefId>>
+                // Build a fast lookup of implementations that opted out via [SkipAssemblyDecorators]
+                var skipped = new HashSet<TypeDefId>(inputs.SkipMarkers.Select(m => m.ImplementationDef));
+
+                // Convert ServiceDecoration → DecoratorToIntercept by matching service types with registrations
+                var assemblyDecos = new List<DecoratorToIntercept>();
+                foreach (var matchingDecos in inputs.Registrations.Select(reg => inputs.ServiceDecos
+                             .Where(sd =>
+                                 sd.ServiceDef.Equals(reg.ServiceDef) && sd.AssemblyName == reg.ImplDef.AssemblyName)
+                             .Where(_ => !skipped.Contains(reg.ImplDef))
+                             .Select(sd => new DecoratorToIntercept(
+                                 ImplementationDef: reg.ImplDef,
+                                 DecoratorDef: sd.DecoratorDef,
+                                 Order: sd.Order,
+                                 IsInterceptable: true))))
+                {
+                    assemblyDecos.AddRange(matchingDecos);
+                }
+
+                // Build decoration map with proper merge/precedence logic (class-level and assembly-level kept separate)
+                var byImpl = BuildDecorationMap(classDecos, assemblyDecos.ToImmutableArray(), inputs.DoNotDecorateDirectives);
 
                 // Only emit interceptors for registrations that have decorators
-                var regsWithDecorators = regs
+                var regsWithDecorators = inputs.Registrations
                     .Where(r => byImpl.TryGetValue(r.ImplDef, out var decos) && decos.Count > 0)
                     .ToEquatableArray();
 
@@ -121,24 +238,94 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
     }
 
     private static Dictionary<TypeDefId, EquatableArray<TypeDefId>> BuildDecorationMap(
-        ImmutableArray<DecoratorToIntercept> items)
+        ImmutableArray<DecoratorToIntercept> classDecorators,
+        ImmutableArray<DecoratorToIntercept> assemblyDecorators,
+        ImmutableArray<DoNotDecorateDirective> doNotDecorateDirectives)
     {
-        var tmp = new Dictionary<TypeDefId, List<(int Order, TypeDefId Deco)>>();
-        foreach (var d in items.Where(d => d.IsInterceptable))
-        {
-            if (!tmp.TryGetValue(d.ImplementationDef, out var list))
-                tmp[d.ImplementationDef] = list = new();
+        // Build intermediate structure: ImplementationDef -> List<MergedDecoration>
+        var grouped = new Dictionary<TypeDefId, List<MergedDecoration>>();
 
-            list.Add((d.Order, d.DecoratorDef));
+        // Add class-level decorators
+        foreach (var d in classDecorators.Where(d => d.IsInterceptable))
+        {
+            if (!grouped.TryGetValue(d.ImplementationDef, out var list))
+                grouped[d.ImplementationDef] = list = new();
+
+            list.Add(new MergedDecoration(
+                DecoratorDef: d.DecoratorDef,
+                Order: d.Order,
+                Source: DecorationSource.Class,
+                IsInterceptable: d.IsInterceptable));
         }
 
-        var result = new Dictionary<TypeDefId, EquatableArray<TypeDefId>>(tmp.Count);
-        foreach (var (impl, list) in tmp)
+        // Add assembly-level decorators (always IsInterceptable: true for now)
+        foreach (var d in assemblyDecorators.Where(d => d.IsInterceptable))
         {
-            list.Sort(static (a, b) => a.Order.CompareTo(b.Order));
-            var unique = list.Select(x => x.Deco).Distinct();
-            result[impl] = new EquatableArray<TypeDefId>(unique);
+            if (!grouped.TryGetValue(d.ImplementationDef, out var list))
+                grouped[d.ImplementationDef] = list = new();
+
+            list.Add(new MergedDecoration(
+                DecoratorDef: d.DecoratorDef,
+                Order: d.Order,
+                Source: DecorationSource.Assembly,
+                IsInterceptable: true));
         }
+
+        // Build fast lookup: ImplementationDef -> Set<DecoratorDef to exclude>
+        var exclusions = new Dictionary<TypeDefId, HashSet<TypeDefId>>();
+        foreach (var directive in doNotDecorateDirectives)
+        {
+            if (!exclusions.TryGetValue(directive.ImplementationDef, out var excludedSet))
+                exclusions[directive.ImplementationDef] = excludedSet = new HashSet<TypeDefId>();
+
+            excludedSet.Add(directive.DecoratorDef);
+        }
+
+        // Deduplicate and sort each implementation's decorators
+        var result = new Dictionary<TypeDefId, EquatableArray<TypeDefId>>();
+        foreach (var (impl, decorations) in grouped)
+        {
+            // Group by DecoratorDef to find duplicates, then take the one with lowest Source (Class=0 wins over Assembly=1)
+            var deduplicated = decorations
+                .GroupBy(m => m.DecoratorDef)
+                .Select(g => g.MinBy(m => m.Source)!) // Class (0) wins over Assembly (1)
+                .OrderBy(m => m.Order)
+                .ThenBy(m => m.Source)
+                .ThenBy(m => GetSortableTypeName(m.DecoratorDef))
+                .ToList();
+
+            // Apply DoNotDecorateDirective filtering (Priority 3)
+            // Remove decorators whose DecoratorDef matches any exclusion for this implementation
+            if (exclusions.TryGetValue(impl, out var excludedDecorators))
+            {
+                deduplicated = deduplicated
+                    .Where(m => !excludedDecorators.Contains(m.DecoratorDef))
+                    .ToList();
+            }
+
+            // Extract just the DecoratorDef for emission
+            result[impl] = new EquatableArray<TypeDefId>(deduplicated.Select(m => m.DecoratorDef));
+        }
+
         return result;
+    }
+
+    /// <summary>
+    /// Generates a stable fully-qualified name for a type definition, used as a tiebreaker
+    /// when sorting decorators with the same Order and Source.
+    /// </summary>
+    private static string GetSortableTypeName(TypeDefId typeDefId)
+    {
+        var parts = new List<string>();
+
+        if (typeDefId.ContainingNamespaces.Count > 0)
+            parts.Add(string.Join(".", typeDefId.ContainingNamespaces));
+
+        if (typeDefId.ContainingTypes.Count > 0)
+            parts.Add(string.Join("+", typeDefId.ContainingTypes));
+
+        parts.Add(typeDefId.MetadataName);
+
+        return string.Join(".", parts.Where(p => !string.IsNullOrEmpty(p)));
     }
 }

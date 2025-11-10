@@ -21,22 +21,22 @@ namespace DecoWeaver.Generated
     file static class DecoWeaverInterceptors
     {
         [InterceptsLocation(version: 1, data: "BfOlytAPVRF7x+iITUyhP90AAABQcm9ncmFtLmNz")]
-        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddTransient&lt;global::DecoWeaver.Sample.IRepository<Customer>, global::DecoWeaver.Sample.DynamoDbRepository<Customer>&gt;(IServiceCollection)</summary>
+        /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddTransient&lt;global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>&gt;(IServiceCollection)</summary>
         internal static IServiceCollection AddTransient_0<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
             // Register the undecorated implementation as a keyed service
-            var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<Customer>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<Customer>));
-            services.AddKeyedTransient<global::DecoWeaver.Sample.IRepository<Customer>, global::DecoWeaver.Sample.DynamoDbRepository<Customer>>(key);
+            var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>));
+            services.AddKeyedTransient<global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>>(key);
 
             // Register factory that applies decorators
-            services.AddTransient<global::DecoWeaver.Sample.IRepository<Customer>>(sp =>
+            services.AddTransient<global::DecoWeaver.Sample.IRepository<global::Customer>>(sp =>
             {
-                var current = (global::DecoWeaver.Sample.IRepository<Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<Customer>>(key)!;
+                var current = (global::DecoWeaver.Sample.IRepository<global::Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::Customer>>(key)!;
                 // Compose decorators (innermost to outermost)
-                current = (global::DecoWeaver.Sample.IRepository<Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<Customer>), typeof(global::DecoWeaver.Sample.CachingRepository<>), current);
-                current = (global::DecoWeaver.Sample.IRepository<Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<Customer>), typeof(global::DecoWeaver.Sample.LoggingRepository<>), current);
+                current = (global::DecoWeaver.Sample.IRepository<global::Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.CachingRepository<>), current);
+                current = (global::DecoWeaver.Sample.IRepository<global::Customer>)DecoratorFactory.Create(sp, typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.LoggingRepository<>), current);
                 return current;
             });
             return services;
