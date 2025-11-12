@@ -13,6 +13,7 @@
 - **🔧 Simple API**: Apply decorators with `[DecoratedBy<T>]` or `[assembly: DecorateService(...)]`
 - **🌐 Assembly-Level Decorators**: Apply decorators to all implementations from one place
 - **🚀 Generic Type Decoration**: Decorate generic types like `IRepository<T>` with open generic decorators
+- **🏭 Factory Delegate Support**: Works with factory registrations like `AddScoped<T, Impl>(sp => new Impl(...))`
 - **🚫 Opt-Out Support**: Exclude specific decorators with `[DoNotDecorate]`
 - **📦 No Runtime Dependencies**: Only build-time source generator dependency
 - **🔗 Order Control**: Explicit decorator ordering via `Order` property

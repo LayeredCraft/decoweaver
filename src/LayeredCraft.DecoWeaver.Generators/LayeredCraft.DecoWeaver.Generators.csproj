@@ -39,5 +39,8 @@
         <None Include="DecoWeaver.props" Pack="true" PackagePath="build" />
         <None Include="DecoWeaver.targets" Pack="true" PackagePath="build" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Roslyn\" />
+    </ItemGroup>
 
 </Project>

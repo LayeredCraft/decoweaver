@@ -1,5 +1,4 @@
 using DecoWeaver.Model;
-using DecoWeaver.Roslyn;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -64,8 +63,8 @@ internal static class ServiceDecoratedByProvider
 
             yield return new ServiceDecoration(
                 AssemblyName: assemblyName,
-                ServiceDef: serviceSym.ToTypeId().Definition,
-                DecoratorDef: decoratorSym.ToTypeId().Definition,
+                ServiceDef: TypeId.Create(serviceSym).Definition,
+                DecoratorDef: TypeId.Create(decoratorSym).Definition,
                 Order: order);
         }
     }

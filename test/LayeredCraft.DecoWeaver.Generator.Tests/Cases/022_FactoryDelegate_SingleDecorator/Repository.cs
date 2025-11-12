@@ -7,7 +7,7 @@ public interface IRepository<T>
     void Save(T entity);
 }
 
-// This decorator should NOT be applied because the registration uses a factory delegate
+// This decorator SHOULD be applied even though the registration uses a factory delegate (Phase 1)
 [DecoratedBy(typeof(CachingRepository<>))]
 public class DynamoDbRepository<T> : IRepository<T>
 {

@@ -1,5 +1,4 @@
 using DecoWeaver.Model;
-using DecoWeaver.Roslyn;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -46,8 +45,8 @@ internal static class DoNotDecorateProvider
                 continue;
 
             yield return new DoNotDecorateDirective(
-                ImplementationDef: implSym.ToTypeId().Definition,
-                DecoratorDef: decoratorSym.ToTypeId().Definition);
+                ImplementationDef: TypeId.Create(implSym).Definition,
+                DecoratorDef: TypeId.Create(decoratorSym).Definition);
         }
     }
 }

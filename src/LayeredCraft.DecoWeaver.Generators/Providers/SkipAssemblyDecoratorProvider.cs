@@ -1,5 +1,4 @@
 using DecoWeaver.Model;
-using DecoWeaver.Roslyn;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -24,7 +23,7 @@ internal static class SkipAssemblyDecoratorProvider
             return null;
 
         return new SkipAssemblyDecoratorsMarker(
-            ImplementationDef: implDef.ToTypeId().Definition
+            ImplementationDef: TypeId.Create(implDef).Definition
         );
     }
 }

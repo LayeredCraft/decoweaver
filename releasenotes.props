@@ -33,6 +33,38 @@ This is the initial beta release of DecoWeaver, a .NET incremental source genera
 ]]>
     </PackageReleaseNotes>
 
+    <PackageReleaseNotes Condition="'$(VersionPrefix)' == '1.0.2-beta'">
+      <![CDATA[
+## DecoWeaver 1.0.2-beta - Factory Delegate Support
+
+This release adds support for factory delegate registrations, addressing issue #3 (Phase 1).
+
+### New Features
+
+* **Factory delegate support** - Decorators now work with factory delegate registrations:
+  - `AddScoped<TService, TImpl>(sp => new TImpl(...))` - Two-parameter generic overload
+  - `AddScoped<TService>(sp => new TImpl(...))` - Single-parameter generic overload
+  - All lifetimes supported: `AddScoped`, `AddTransient`, `AddSingleton`
+* **Complex dependency resolution** - Factory delegates can resolve dependencies from `IServiceProvider`
+* **Decorator preservation** - Factory logic is preserved while decorators are applied around the result
+
+### What's Changed
+
+* Extended `ClosedGenericRegistrationProvider` to detect and intercept factory delegate signatures
+* Updated `InterceptorEmitter` to generate correct code for factory overloads
+* Factory delegates are registered as keyed services, then wrapped with decorators
+* All existing functionality remains unchanged - this is purely additive
+
+### Documentation
+
+* Updated sample project with factory delegate examples
+* Added comprehensive test coverage (6 new test cases)
+* Full documentation: https://layeredcraft.github.io/decoweaver/
+* GitHub: https://github.com/layeredcraft/decoweaver
+
+]]>
+    </PackageReleaseNotes>
+
     <!-- Fallback for versions without specific release notes -->
     <PackageReleaseNotes Condition="'$(PackageReleaseNotes)' == ''">
       <![CDATA[
