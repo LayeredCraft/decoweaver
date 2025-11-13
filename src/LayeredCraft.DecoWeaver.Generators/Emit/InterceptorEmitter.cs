@@ -87,6 +87,34 @@ internal static class InterceptorEmitter
         // Emit the [InterceptsLocation] attribute
         sb.AppendLine($"        [InterceptsLocation(version: 1, data: {Escape(reg.InterceptsData)})]");
 
+        // Branch on registration kind to emit the correct signature
+        switch (reg.Kind)
+        {
+            case RegistrationKind.Parameterless:
+                EmitParameterlessInterceptor(sb, methodName, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
+            case RegistrationKind.FactoryTwoTypeParams:
+                EmitFactoryTwoTypeParamsInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
+            case RegistrationKind.FactorySingleTypeParam:
+                EmitFactorySingleTypeParamInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
+            default:
+                throw new InvalidOperationException($"Unsupported registration kind: {reg.Kind}");
+        }
+    }
+
+    private static void EmitParameterlessInterceptor(
+        StringBuilder sb,
+        string methodName,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
         // Emit the method - MUST be generic to match the original signature
         sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}, {implFqn}&gt;(IServiceCollection)</summary>");
         sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService, TImplementation>(this IServiceCollection services)");
@@ -115,6 +143,95 @@ internal static class InterceptorEmitter
         {
             sb.AppendLine("            // No decorators, just register normally");
             sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}, {implFqn}>(services);");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
+    private static void EmitFactoryTwoTypeParamsInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var factoryParamName = reg.FactoryParameterName ?? "implementationFactory";
+
+        // Emit the method signature matching AddScoped<T1, T2>(services, Func<IServiceProvider, T2>)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}, {implFqn}&gt;(IServiceCollection, Func&lt;IServiceProvider, {implFqn}&gt;)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService, TImplementation>(this IServiceCollection services, Func<IServiceProvider, TImplementation> {factoryParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("            where TImplementation : class, TService");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Register the undecorated implementation as a keyed service with factory");
+            sb.AppendLine($"            var key = DecoratorKeys.For(typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine($"            services.{AddKeyed(methodName)}<{serviceFqn}>(key, (sp, _) => ({serviceFqn}){factoryParamName}(sp));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory that applies decorators");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(sp =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(key)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, pass through to original method with factory");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}, {implFqn}>(services, {factoryParamName});");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
+    private static void EmitFactorySingleTypeParamInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var factoryParamName = reg.FactoryParameterName ?? "implementationFactory";
+
+        // Emit the method signature matching AddScoped<T>(services, Func<IServiceProvider, T>)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}&gt;(IServiceCollection, Func&lt;IServiceProvider, {serviceFqn}&gt;)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService>(this IServiceCollection services, Func<IServiceProvider, TService> {factoryParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Register the undecorated implementation as a keyed service with factory");
+            sb.AppendLine($"            var key = DecoratorKeys.For(typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine($"            services.{AddKeyed(methodName)}<{serviceFqn}>(key, (sp, _) => {factoryParamName}(sp));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory that applies decorators");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(sp =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(key)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, pass through to original method with factory");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}>(services, {factoryParamName});");
         }
 
         sb.AppendLine("        }");

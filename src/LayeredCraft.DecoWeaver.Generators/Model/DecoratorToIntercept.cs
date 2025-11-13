@@ -1,5 +1,3 @@
-using DecoWeaver.Util;
-
 namespace DecoWeaver.Model;
 
 /// <summary>
@@ -17,29 +15,6 @@ public enum DiLifetime : byte { Transient, Scoped, Singleton }
 
 /// <summary>Compact file location for diagnostics/dedup.</summary>
 public readonly record struct LocationId(string FilePath, int Start, int Length);
-
-/// <summary>
-/// Identity of a type definition (no type arguments).
-/// Stable across compilations: namespace, metadata name, arity, assembly.
-/// </summary>
-public readonly record struct TypeDefId(
-    string AssemblyName,
-    EquatableArray<string> ContainingNamespaces, // outermost -> innermost
-    EquatableArray<string> ContainingTypes,      // for nested types, outermost -> innermost (metadata names)
-    string MetadataName,           // e.g., "IRepository`1"
-    int Arity                      // 0 for non-generic; matches `N in `N
-);
-
-/// <summary>
-/// A (possibly generic) type: definition + zero or more type arguments.
-/// For open generics, TypeArgs.Length == 0 and Arity > 0 (unbound).
-/// For closed generics, TypeArgs.Length == Arity and each arg is a TypeId.
-/// </summary>
-public readonly record struct TypeId(TypeDefId Definition, TypeId[] TypeArgs)
-{
-    public bool IsOpenGeneric => Definition.Arity > 0 && (TypeArgs is null || TypeArgs.Length == 0);
-    public bool IsClosedGeneric => Definition.Arity == TypeArgs.Length && Definition.Arity > 0;
-}
 
 /// <summary>A single ServiceCollection registration we discovered.</summary>
 public readonly record struct RegistrationOccurrence(

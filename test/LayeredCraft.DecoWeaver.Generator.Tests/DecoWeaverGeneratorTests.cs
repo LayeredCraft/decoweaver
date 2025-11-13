@@ -265,14 +265,14 @@ public class DecoWeaverGeneratorTests
 
     [Theory]
     [GeneratorAutoData]
-    public async Task FactoryDelegate_ShouldNotIntercept(DecoWeaverGenerator sut)
+    public async Task FactoryDelegate_SingleDecorator(DecoWeaverGenerator sut)
     {
-        // This test verifies that registrations with factory delegates are NOT intercepted
-        // Only the parameterless overload AddScoped<T1, T2>() should be intercepted
+        // This test verifies that registrations with factory delegates ARE intercepted (Phase 1)
+        // Factory delegate overloads are now supported alongside parameterless overloads
         await VerifyGlue.VerifySourcesAsync(sut,
             [
-                "Cases/022_FactoryDelegate_ShouldNotIntercept/Repository.cs",
-                "Cases/022_FactoryDelegate_ShouldNotIntercept/Program.cs"
+                "Cases/022_FactoryDelegate_SingleDecorator/Repository.cs",
+                "Cases/022_FactoryDelegate_SingleDecorator/Program.cs"
             ],
             featureFlags: FeatureFlags);
     }
@@ -403,6 +403,84 @@ public class DecoWeaverGeneratorTests
                 "Cases/032_DoNotDecorate_IsolationCheck/Repository.cs",
                 "Cases/032_DoNotDecorate_IsolationCheck/Program.cs",
                 "Cases/032_DoNotDecorate_IsolationCheck/Global.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_SingleGenericParam(DecoWeaverGenerator sut)
+    {
+        // Test single type parameter factory: AddScoped<T>(factory)
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/033_FactoryDelegate_SingleGenericParam/Repository.cs",
+                "Cases/033_FactoryDelegate_SingleGenericParam/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_MultipleDecorators(DecoWeaverGenerator sut)
+    {
+        // Test multiple decorators with factory delegate
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/034_FactoryDelegate_MultipleDecorators/Repository.cs",
+                "Cases/034_FactoryDelegate_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_NoDecorators(DecoWeaverGenerator sut)
+    {
+        // Test factory delegate without decorators (pass-through)
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/035_FactoryDelegate_NoDecorators/Repository.cs",
+                "Cases/035_FactoryDelegate_NoDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_Transient(DecoWeaverGenerator sut)
+    {
+        // Test AddTransient with factory delegate
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/036_FactoryDelegate_Transient/Repository.cs",
+                "Cases/036_FactoryDelegate_Transient/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_Singleton(DecoWeaverGenerator sut)
+    {
+        // Test AddSingleton with factory delegate
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/037_FactoryDelegate_Singleton/Repository.cs",
+                "Cases/037_FactoryDelegate_Singleton/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task FactoryDelegate_ComplexDependencies(DecoWeaverGenerator sut)
+    {
+        // Test factory delegate with complex dependencies from IServiceProvider
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/038_FactoryDelegate_ComplexDependencies/Repository.cs",
+                "Cases/038_FactoryDelegate_ComplexDependencies/Program.cs"
             ],
             featureFlags: FeatureFlags);
     }

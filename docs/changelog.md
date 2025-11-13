@@ -10,6 +10,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - No changes yet
 
+## [1.0.2-beta] - 2025-11-12
+
+### Added
+- **Factory delegate support** - Decorators now work with factory delegate registrations
+  - `AddScoped<TService, TImplementation>(sp => new Implementation(...))` - Two-parameter generic overload
+  - `AddScoped<TService>(sp => new Implementation(...))` - Single-parameter generic overload
+  - All lifetimes supported: `AddScoped`, `AddTransient`, `AddSingleton`
+  - Factory delegates can resolve dependencies from `IServiceProvider`
+  - Decorator preservation - Factory logic is preserved while decorators are applied around the result
+
+### Changed
+- Extended `ClosedGenericRegistrationProvider` to detect and intercept factory delegate signatures
+- Updated `InterceptorEmitter` to generate correct code for factory overloads
+- Factory delegates are registered as keyed services, then wrapped with decorators
+- Test case 022 renamed to `FactoryDelegate_SingleDecorator` to reflect new behavior
+
+### Technical Details
+- Added `RegistrationKind` enum (Parameterless, FactoryTwoTypeParams, FactorySingleTypeParam)
+- Extended `ClosedGenericRegistration` model with optional `FactoryParameterName` field
+- Factory transformers detect `Func<IServiceProvider, T>` signatures
+- Generated interceptors preserve user's factory logic in keyed service registration
+- 6 new test cases (033-038) covering factory delegate scenarios
+- Updated sample project with factory delegate examples demonstrating complex dependencies
+- All existing functionality remains unchanged - this is purely additive
+
 ## [1.0.1-beta] - 2025-01-XX
 
 ### Added

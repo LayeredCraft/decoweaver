@@ -175,15 +175,47 @@ Tests live in `/test/Cases/{NNN}_{Description}/` directories:
 - Open generic decorators are closed at runtime via `MakeGenericType` when the service is resolved
 - Type arguments extracted from the service type being resolved
 
-**Supported Registration Pattern**:
+**Supported Registration Patterns**:
 ```csharp
-// ✅ Closed generic registration - INTERCEPTED by DecoWeaver
+// ✅ Closed generic registration (parameterless) - INTERCEPTED by DecoWeaver
 services.AddScoped<IRepository<User>, Repository<User>>();
 services.AddScoped<IRepository<Product>, Repository<Product>>();
+
+// ✅ Closed generic registration with factory delegate - INTERCEPTED by DecoWeaver (v1.0.2+)
+services.AddScoped<IRepository<User>, Repository<User>>(sp => new Repository<User>());
+services.AddScoped<IRepository<User>>(sp => new Repository<User>());
 
 // ❌ Open generic registration - NOT intercepted
 services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 ```
+
+### Factory Delegate Support (v1.0.2+)
+
+DecoWeaver supports factory delegate registrations for all three lifetimes:
+
+**Two-parameter generic factory**:
+```csharp
+services.AddScoped<IRepository<T>, Repository<T>>(sp => new Repository<T>(...));
+services.AddTransient<IRepository<T>, Repository<T>>(sp => new Repository<T>(...));
+services.AddSingleton<IRepository<T>, Repository<T>>(sp => new Repository<T>(...));
+```
+
+**Single-parameter generic factory**:
+```csharp
+services.AddScoped<IRepository<T>>(sp => new Repository<T>(...));
+```
+
+**Complex dependencies** are supported - factories can resolve dependencies from `IServiceProvider`:
+```csharp
+services.AddScoped<IRepository<User>, Repository<User>>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<Repository<User>>>();
+    var config = sp.GetRequiredService<IConfiguration>();
+    return new Repository<User>(logger, config);
+});
+```
+
+Decorators are applied around the factory result, and the factory logic is preserved.
 
 ### Attribute Compilation
 

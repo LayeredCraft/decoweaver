@@ -1,4 +1,5 @@
 using DecoWeaver.Attributes;
+using Microsoft.Extensions.Logging;
 
 namespace DecoWeaver.Sample;
 
@@ -150,4 +151,29 @@ public sealed class LoggingDecorator<T> : IAssemblyInterface<T>
         Console.WriteLine("Logging before doing something.");
         _inner.DoSomething(item);
     }
+}
+
+// ============================================================================
+// Example 3 & 4: Factory delegate examples with dependencies
+// ============================================================================
+[DecoratedBy(typeof(CachingRepository<>))]
+public sealed class RepositoryWithLogger<T> : IRepository<T>
+{
+    private readonly Microsoft.Extensions.Logging.ILogger _logger;
+
+    public RepositoryWithLogger(Microsoft.Extensions.Logging.ILogger logger)
+    {
+        _logger = logger;
+    }
+
+    public void Save(T item)
+    {
+        _logger.LogInformation("Saving in {RepositoryType}, type: {TypeName}", nameof(RepositoryWithLogger<T>), typeof(T).Name);
+    }
+}
+
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
 }

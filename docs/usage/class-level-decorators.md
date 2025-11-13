@@ -113,6 +113,112 @@ services.AddTransient<IUserRepository, UserRepository>();
 
 DecoWeaver intercepts these registration calls and wraps your implementation with the decorator.
 
+## Factory Delegate Registration
+
+!!! info "New in v1.0.2-beta"
+    Factory delegate support was added in version 1.0.2-beta.
+
+DecoWeaver also supports factory delegate registrations, allowing you to use custom initialization logic while still applying decorators:
+
+### Two-Parameter Generic Factory
+
+```csharp
+[DecoratedBy<CachingRepository>]
+public class UserRepository : IUserRepository
+{
+    // Your implementation
+}
+
+// Factory delegate with two type parameters
+services.AddScoped<IUserRepository, UserRepository>(sp =>
+    new UserRepository());
+```
+
+### Single-Parameter Generic Factory
+
+```csharp
+[DecoratedBy<LoggingRepository>]
+public class UserRepository : IUserRepository
+{
+    // Your implementation
+}
+
+// Factory delegate with single type parameter
+services.AddScoped<IUserRepository>(sp =>
+    new UserRepository());
+```
+
+### Complex Dependencies
+
+Factory delegates can resolve dependencies from the `IServiceProvider`:
+
+```csharp
+[DecoratedBy<CachingRepository>]
+public class UserRepository : IUserRepository
+{
+    private readonly ILogger _logger;
+    private readonly IOptions<DatabaseOptions> _options;
+
+    public UserRepository(ILogger logger, IOptions<DatabaseOptions> options)
+    {
+        _logger = logger;
+        _options = options;
+    }
+
+    // Implementation
+}
+
+// Register with factory that resolves dependencies
+services.AddScoped<IUserRepository, UserRepository>(sp =>
+{
+    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger<UserRepository>();
+    var options = sp.GetRequiredService<IOptions<DatabaseOptions>>();
+
+    return new UserRepository(logger, options);
+});
+```
+
+### How It Works
+
+When using factory delegates:
+
+1. **Your factory logic is preserved** - The lambda you provide is captured and used
+2. **Decorators are applied around the result** - DecoWeaver wraps the factory's output
+3. **All lifetimes are supported** - `AddScoped`, `AddTransient`, `AddSingleton`
+
+The generated code:
+- Registers your factory as a keyed service
+- Creates an outer factory that calls your factory and applies decorators
+- Maintains the same dependency resolution behavior you defined
+
+```csharp
+// What you write:
+services.AddScoped<IUserRepository, UserRepository>(sp =>
+    new UserRepository(sp.GetRequiredService<ILogger>()));
+
+// What happens (conceptually):
+// 1. Your factory is registered as keyed service
+// 2. Outer factory applies decorators:
+var repo = /* your factory result */;
+var cached = new CachingRepository(repo);
+var logged = new LoggingRepository(cached);
+// 3. Logged instance is returned
+```
+
+### Factory Delegate Limitations
+
+Factory delegates work with:
+- ✅ Generic registration methods: `AddScoped<T1, T2>(factory)`, `AddScoped<T>(factory)`
+- ✅ All standard lifetimes: Scoped, Transient, Singleton
+- ✅ Complex dependency resolution from `IServiceProvider`
+- ✅ Multiple decorators with ordering
+
+Not currently supported:
+- ❌ Keyed service registrations with factory delegates
+- ❌ Instance registrations
+- ❌ Open generic registration with `typeof()` syntax
+
 ## Decorator Dependencies
 
 Decorators can have their own dependencies, resolved from the DI container:

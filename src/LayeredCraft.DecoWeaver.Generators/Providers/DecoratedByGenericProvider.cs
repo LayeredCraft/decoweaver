@@ -1,5 +1,4 @@
 using DecoWeaver.Model;
-using DecoWeaver.Roslyn;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -53,8 +52,8 @@ internal static class DecoratedByGenericProvider
             if (decoratorSym is null) continue;
 
             yield return new DecoratorToIntercept(
-                ImplementationDef: implDef.ToTypeId().Definition,
-                DecoratorDef: decoratorSym.ToTypeId().Definition,
+                ImplementationDef: TypeId.Create(implDef).Definition,
+                DecoratorDef: TypeId.Create(decoratorSym).Definition,
                 Order: order,
                 IsInterceptable: true);
         }
