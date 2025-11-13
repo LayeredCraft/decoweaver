@@ -413,10 +413,9 @@ internal static class InterceptorEmitter
         sb.AppendLine();
         sb.AppendLine("            public static object ForKeyed(object? userKey, Type serviceType, Type implementationType)");
         sb.AppendLine("            {");
-        sb.AppendLine("                var s = serviceType.AssemblyQualifiedName ?? serviceType.FullName ?? serviceType.Name;");
-        sb.AppendLine("                var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;");
-        sb.AppendLine("                var keyStr = userKey?.ToString() ?? \"null\";");
-        sb.AppendLine("                return string.Concat(keyStr, \"|\", s, \"|\", i);");
+        sb.AppendLine("                // Return a tuple that preserves the actual key object (not its string representation)");
+        sb.AppendLine("                // This ensures distinct object keys create distinct nested keys");
+        sb.AppendLine("                return (userKey, serviceType, implementationType);");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();

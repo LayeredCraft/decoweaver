@@ -52,10 +52,9 @@ namespace DecoWeaver.Generated
 
             public static object ForKeyed(object? userKey, Type serviceType, Type implementationType)
             {
-                var s = serviceType.AssemblyQualifiedName ?? serviceType.FullName ?? serviceType.Name;
-                var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;
-                var keyStr = userKey?.ToString() ?? "null";
-                return string.Concat(keyStr, "|", s, "|", i);
+                // Return a tuple that preserves the actual key object (not its string representation)
+                // This ensures distinct object keys create distinct nested keys
+                return (userKey, serviceType, implementationType);
             }
         }
 
