@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <PackageReleaseNotes Condition="'$(VersionPrefix)' == '1.0.0-beta'">
+    <PackageReleaseNotes Condition="$(VersionPrefix.StartsWith('1.0.0-beta'))">
       <![CDATA[
 ## DecoWeaver 1.0.0-beta.* - Initial Beta Release
 
@@ -33,7 +33,49 @@ This is the initial beta release of DecoWeaver, a .NET incremental source genera
 ]]>
     </PackageReleaseNotes>
 
-    <PackageReleaseNotes Condition="'$(VersionPrefix)' == '1.0.2-beta'">
+    <PackageReleaseNotes Condition="$(VersionPrefix.StartsWith('1.0.1-beta'))">
+      <![CDATA[
+## DecoWeaver 1.0.1-beta - Assembly-Level Decorator Support
+
+This release adds assembly-level decorator support, enabling you to apply decorators to all implementations from one central location (Phase 2a of #2).
+
+### New Features
+
+* **Assembly-level `[DecorateService(...)]` attribute** - Apply decorators to all implementations of a service interface from one place
+* **`[SkipAssemblyDecoration]` attribute** - Opt out of all assembly-level decorators for a specific implementation
+* **`[DoNotDecorate(typeof(TDecorator))]` attribute** - Surgically exclude specific decorators from individual implementations
+* **Merge/precedence logic** - Combines class-level and assembly-level decorators with proper ordering
+* **Assembly-level decorator ordering** - Control order via `Order` property
+* **Open generic matching** - Assembly-level decorators and DoNotDecorate work with open generic patterns
+* **4 new test cases** (029-032) covering assembly-level decorator scenarios
+
+### What's Changed
+
+* Decorator discovery pipeline now includes assembly-level attribute streams
+* BuildDecorationMap merges and deduplicates decorators from multiple sources
+* Documentation restructured to include assembly-level decorator guides
+
+### Technical Details
+
+* Added `DecorateServiceAttribute` for assembly-level decoration
+* Added `SkipAssemblyDecorationAttribute` for opting out of all assembly decorators
+* Added `DoNotDecorateAttribute` for surgical decorator exclusion
+* Added `ServiceDecoratedByProvider` for assembly attribute discovery
+* Added `SkipAssemblyDecoratorProvider` for skip directive discovery
+* Added `DoNotDecorateProvider` for opt-out directive discovery
+* Filtering logic added to BuildDecorationMap for both skip and do-not-decorate support
+* Comprehensive test coverage with snapshot verification
+
+### Documentation
+
+* Full documentation: https://layeredcraft.github.io/decoweaver/
+* Changelog: https://layeredcraft.github.io/decoweaver/changelog/
+* GitHub: https://github.com/layeredcraft/decoweaver
+
+]]>
+    </PackageReleaseNotes>
+
+    <PackageReleaseNotes Condition="$(VersionPrefix.StartsWith('1.0.2-beta'))">
       <![CDATA[
 ## DecoWeaver 1.0.2-beta - Factory Delegate Support
 
