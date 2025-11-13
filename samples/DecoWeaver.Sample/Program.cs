@@ -27,9 +27,9 @@ var serviceProvider = new ServiceCollection()
     .AddKeyedScoped<IAssemblyInterface<int>, ConcreteClass<int>>("cache")
     .AddKeyedScoped<IAssemblyInterface<int>, ConcreteClass<int>>("database")
     // Example 7: Instance registration (singleton only)
-    // .AddSingleton<IRepository<Invoice>>(new DynamoDbRepository<Invoice>())
-    .AddSingleton(new DynamoDbRepository<Invoice>())
-    // .AddKeyedSingleton<IRepository<Invoice>>("instance", new DynamoDbRepository<Invoice>())
+    .AddSingleton<IRepository<Invoice>>(new DynamoDbRepository<Invoice>())
+    // Example 8: Keyed instance registration
+    .AddKeyedSingleton<IRepository<Receipt>>("keyed-instance", new DynamoDbRepository<Receipt>())
     .BuildServiceProvider();
 
 // Test Example 1: Open generic repository (parameterless)
@@ -84,6 +84,13 @@ Console.WriteLine("=== Example 7: Instance Registration (Singleton) ===");
 var invoiceRepo = serviceProvider.GetRequiredService<IRepository<Invoice>>();
 Console.WriteLine($"Resolved: {invoiceRepo.GetType().Name}");
 invoiceRepo.Save(new Invoice { Id = 1, Amount = 1500.00m });
+Console.WriteLine();
+
+// Test Example 8: Keyed instance registration
+Console.WriteLine("=== Example 8: Keyed Instance Registration ===");
+var receiptRepo = serviceProvider.GetRequiredKeyedService<IRepository<Receipt>>("keyed-instance");
+Console.WriteLine($"Resolved: {receiptRepo.GetType().Name}");
+receiptRepo.Save(new Receipt { Id = 1, Total = 250.00m });
 
 public class Customer
 {
@@ -101,4 +108,10 @@ public class Invoice
 {
     public int Id { get; set; }
     public decimal Amount { get; set; }
+}
+
+public class Receipt
+{
+    public int Id { get; set; }
+    public decimal Total { get; set; }
 }
