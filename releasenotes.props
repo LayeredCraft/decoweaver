@@ -107,6 +107,49 @@ This release adds support for factory delegate registrations, addressing issue #
 ]]>
     </PackageReleaseNotes>
 
+    <PackageReleaseNotes Condition="$(VersionPrefix.StartsWith('1.0.3-beta'))">
+      <![CDATA[
+## DecoWeaver 1.0.3-beta - Keyed Service Support
+
+This release adds support for keyed service registrations, completing issue #3 (Phase 2).
+
+### New Features
+
+* **Keyed service support** - Decorators now work with keyed service registrations:
+  - `AddKeyedScoped<TService, TImpl>(serviceKey)` - Keyed parameterless registration
+  - `AddKeyedScoped<TService, TImpl>(serviceKey, factory)` - Keyed with factory delegate (two-parameter)
+  - `AddKeyedScoped<TService>(serviceKey, factory)` - Keyed with factory delegate (single-parameter)
+  - All lifetimes supported: `AddKeyedScoped`, `AddKeyedTransient`, `AddKeyedSingleton`
+* **Multiple keys per service** - Register the same service type with different keys independently
+* **All key types supported** - Works with `string`, `int`, `enum`, and custom object keys
+* **Nested key strategy** - Prevents circular resolution while preserving user's original key
+
+### What's Changed
+
+* Extended `RegistrationKind` enum with three keyed service variants
+* Added `ServiceKeyParameterName` field to `ClosedGenericRegistration` model
+* Updated `ClosedGenericRegistrationProvider` to detect keyed service signatures (2 or 3 parameters)
+* Updated `InterceptorEmitter` to generate keyed service interceptors with nested key strategy
+* Added `ForKeyed` helper method to `DecoratorKeys` class for nested key generation
+
+### Technical Details
+
+* Nested key format: `"{userKey}|{ServiceAQN}|{ImplAQN}"` prevents conflicts between keys
+* User's original key preserved for resolution via `GetRequiredKeyedService`
+* Each key gets independent decorator chain - no sharing between keys
+* 7 new test cases (039-045) covering keyed service scenarios
+* Updated sample project with keyed service examples (string and integer keys, multiple keys)
+* All existing functionality remains unchanged - this is purely additive
+
+### Documentation
+
+* Full documentation: https://layeredcraft.github.io/decoweaver/
+* Changelog: https://layeredcraft.github.io/decoweaver/changelog/
+* GitHub: https://github.com/layeredcraft/decoweaver
+
+]]>
+    </PackageReleaseNotes>
+
     <!-- Fallback for versions without specific release notes -->
     <PackageReleaseNotes Condition="'$(PackageReleaseNotes)' == ''">
       <![CDATA[

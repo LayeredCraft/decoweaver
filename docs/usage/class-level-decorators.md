@@ -210,13 +210,169 @@ var logged = new LoggingRepository(cached);
 
 Factory delegates work with:
 - ✅ Generic registration methods: `AddScoped<T1, T2>(factory)`, `AddScoped<T>(factory)`
+- ✅ Keyed service registrations with factory delegates (as of v1.0.3-beta)
 - ✅ All standard lifetimes: Scoped, Transient, Singleton
 - ✅ Complex dependency resolution from `IServiceProvider`
 - ✅ Multiple decorators with ordering
 
 Not currently supported:
-- ❌ Keyed service registrations with factory delegates
 - ❌ Instance registrations
+- ❌ Open generic registration with `typeof()` syntax
+
+## Keyed Service Registration
+
+!!! info "New in v1.0.3-beta"
+    Keyed service support was added in version 1.0.3-beta.
+
+DecoWeaver supports keyed service registrations (introduced in .NET 8+), allowing you to register multiple implementations of the same interface under different keys while applying decorators independently:
+
+### Basic Keyed Service
+
+```csharp
+[DecoratedBy<LoggingRepository<>>]
+public class SqlRepository<T> : IRepository<T>
+{
+    // Your SQL implementation
+}
+
+// Register with a key
+services.AddKeyedScoped<IRepository<User>, SqlRepository<User>>("sql");
+
+// Resolve using the key
+var repo = serviceProvider.GetRequiredKeyedService<IRepository<User>>("sql");
+// Returns: LoggingRepository<User> wrapping SqlRepository<User>
+```
+
+### Multiple Keys for Same Service
+
+Register multiple implementations with different keys - each gets decorated independently:
+
+```csharp
+[DecoratedBy<CachingRepository<>>]
+public class SqlRepository<T> : IRepository<T> { }
+
+[DecoratedBy<CachingRepository<>>]
+public class CosmosRepository<T> : IRepository<T> { }
+
+// Register both with different keys
+services.AddKeyedScoped<IRepository<User>, SqlRepository<User>>("sql");
+services.AddKeyedScoped<IRepository<User>, CosmosRepository<User>>("cosmos");
+
+// Each resolves with its own decorator chain
+var sqlRepo = serviceProvider.GetRequiredKeyedService<IRepository<User>>("sql");
+var cosmosRepo = serviceProvider.GetRequiredKeyedService<IRepository<User>>("cosmos");
+```
+
+### Different Key Types
+
+Keys can be any object type:
+
+```csharp
+// String keys
+services.AddKeyedScoped<IRepository<User>, UserRepository>("primary");
+
+// Integer keys
+services.AddKeyedScoped<IRepository<Order>, OrderRepository>(1);
+
+// Enum keys
+public enum DatabaseType { Primary, Secondary, Archive }
+services.AddKeyedScoped<IRepository<Data>, DataRepository>(DatabaseType.Primary);
+```
+
+### Keyed Services with Factory Delegates
+
+Combine keyed services with factory delegates:
+
+```csharp
+[DecoratedBy<CachingRepository<>>]
+public class ConfigurableRepository<T> : IRepository<T>
+{
+    private readonly string _connectionString;
+
+    public ConfigurableRepository(string connectionString)
+    {
+        _connectionString = connectionString;
+    }
+
+    // Implementation
+}
+
+// Keyed factory delegate
+services.AddKeyedScoped<IRepository<Customer>, ConfigurableRepository<Customer>>(
+    "primary",
+    (sp, key) => new ConfigurableRepository<Customer>("Server=primary;Database=Main")
+);
+
+// Decorators still apply
+var repo = serviceProvider.GetRequiredKeyedService<IRepository<Customer>>("primary");
+// Returns: CachingRepository<Customer> wrapping ConfigurableRepository<Customer>
+```
+
+### Keyed Service Lifetimes
+
+All lifetimes are supported:
+
+```csharp
+// Scoped
+services.AddKeyedScoped<IRepository<User>, UserRepository>("scoped-key");
+
+// Transient
+services.AddKeyedTransient<IRepository<Event>, EventRepository>("transient-key");
+
+// Singleton
+services.AddKeyedSingleton<IRepository<Config>, ConfigRepository>("singleton-key");
+```
+
+### How Keyed Services Work
+
+When using keyed services with decorators:
+
+1. **User's key is preserved** - You resolve services using your original key
+2. **Nested key prevents conflicts** - DecoWeaver uses an internal nested key format
+3. **Independent decoration** - Each key gets its own decorator chain
+
+```csharp
+// What you write:
+services.AddKeyedScoped<IRepository<User>, SqlRepository<User>>("sql");
+
+// What happens internally:
+// 1. Nested key created: "sql|IRepository`1|SqlRepository`1"
+// 2. Undecorated impl registered with nested key
+// 3. Decorated factory registered with your key "sql"
+// 4. When you resolve with "sql", decorators are applied
+```
+
+### Keyed Service Consumer Injection
+
+Use the `[FromKeyedServices]` attribute to inject keyed services:
+
+```csharp
+public class UserService
+{
+    private readonly IRepository<User> _sqlRepo;
+    private readonly IRepository<User> _cosmosRepo;
+
+    public UserService(
+        [FromKeyedServices("sql")] IRepository<User> sqlRepo,
+        [FromKeyedServices("cosmos")] IRepository<User> cosmosRepo)
+    {
+        _sqlRepo = sqlRepo;    // Decorated SqlRepository
+        _cosmosRepo = cosmosRepo; // Decorated CosmosRepository
+    }
+}
+```
+
+### Keyed Service Limitations
+
+Keyed services work with:
+- ✅ All registration patterns: parameterless and factory delegates
+- ✅ All lifetimes: Scoped, Transient, Singleton
+- ✅ All key types: string, int, enum, custom objects
+- ✅ Multiple keys per service type
+- ✅ Multiple decorators with ordering
+
+Current limitations:
+- ❌ Instance registrations with keys
 - ❌ Open generic registration with `typeof()` syntax
 
 ## Decorator Dependencies
