@@ -113,6 +113,8 @@ public interface IAssemblyInterface<T>
     void DoSomething(T item);
 }
 
+[DecoratedBy(typeof(LoggingDecorator<>), Order = 2)]
+[DecoratedBy(typeof(CachingDecorator<>), Order = 1)]
 public sealed class ConcreteClass<T> : IAssemblyInterface<T>
 {
     public void DoSomething(T item)

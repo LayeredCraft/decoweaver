@@ -185,6 +185,10 @@ services.AddScoped<IRepository<Product>, Repository<Product>>();
 services.AddScoped<IRepository<User>, Repository<User>>(sp => new Repository<User>());
 services.AddScoped<IRepository<User>>(sp => new Repository<User>());
 
+// ✅ Keyed service registration - INTERCEPTED by DecoWeaver (v1.0.3+)
+services.AddKeyedScoped<IRepository<User>, Repository<User>>("sql");
+services.AddKeyedScoped<IRepository<User>, Repository<User>>("sql", (sp, key) => new Repository<User>());
+
 // ❌ Open generic registration - NOT intercepted
 services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 ```
@@ -216,6 +220,59 @@ services.AddScoped<IRepository<User>, Repository<User>>(sp =>
 ```
 
 Decorators are applied around the factory result, and the factory logic is preserved.
+
+### Keyed Service Support (v1.0.3+)
+
+DecoWeaver supports keyed service registrations for all three lifetimes. Keyed services allow multiple implementations of the same service type to be registered with different keys.
+
+**Keyed parameterless registration**:
+```csharp
+services.AddKeyedScoped<IRepository<User>, SqlRepository<User>>("sql");
+services.AddKeyedScoped<IRepository<User>, CosmosRepository<User>>("cosmos");
+services.AddKeyedTransient<ICache<T>, RedisCache<T>>("redis");
+services.AddKeyedSingleton<ILogger<T>, FileLogger<T>>("file");
+```
+
+**Keyed with factory delegate**:
+```csharp
+// Two-parameter keyed factory: Func<IServiceProvider, object?, TService>
+services.AddKeyedScoped<IRepository<User>, SqlRepository<User>>(
+    "sql",
+    (sp, key) => new SqlRepository<User>("Server=sql01;Database=Users")
+);
+
+// Single-parameter keyed factory: Func<IServiceProvider, object?, TService>
+services.AddKeyedScoped<IRepository<User>>(
+    "sql",
+    (sp, key) => new SqlRepository<User>("Server=sql01;Database=Users")
+);
+```
+
+**Nested key strategy**:
+- User's original key is preserved for resolution via `GetRequiredKeyedService(userKey)`
+- Internally, DecoWeaver creates a nested key: `"{userKey}|{ServiceAQN}|{ImplAQN}"`
+- Undecorated implementation registered with nested key to prevent circular resolution
+- Decorated factory registered with user's original key
+- Each key gets independent decorator chain - no sharing between keys
+
+**Example resolution**:
+```csharp
+// User code (exactly as before)
+var sqlRepo = serviceProvider.GetRequiredKeyedService<IRepository<User>>("sql");
+
+// What DecoWeaver generates internally:
+// 1. Register undecorated: AddKeyedScoped<...>("sql|IRepository`1|SqlRepository`1")
+// 2. Register decorated: AddKeyedScoped<...>("sql", (sp, key) => {
+//       var current = sp.GetRequiredKeyedService<...>("sql|IRepository`1|SqlRepository`1");
+//       current = DecoratorFactory.Create(sp, typeof(...), typeof(LoggingDecorator<>), current);
+//       return current;
+//    })
+```
+
+**Key type support**:
+- All key types supported: `string`, `int`, `enum`, custom objects
+- Multiple keys for same service type work independently
+- Each keyed registration is intercepted separately
 
 ### Attribute Compilation
 

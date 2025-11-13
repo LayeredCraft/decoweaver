@@ -484,4 +484,95 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_SingleDecorator(DecoWeaverGenerator sut)
+    {
+        // Test keyed service with single decorator
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/039_KeyedService_SingleDecorator/Repository.cs",
+                "Cases/039_KeyedService_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_MultipleKeys(DecoWeaverGenerator sut)
+    {
+        // Test multiple keyed services with same interface but different keys
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/040_KeyedService_MultipleKeys/Repository.cs",
+                "Cases/040_KeyedService_MultipleKeys/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_MultipleDecorators(DecoWeaverGenerator sut)
+    {
+        // Test keyed service with multiple decorators in ascending order
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/041_KeyedService_MultipleDecorators/Repository.cs",
+                "Cases/041_KeyedService_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_IntegerKey(DecoWeaverGenerator sut)
+    {
+        // Test keyed service with integer key (non-string key type)
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/042_KeyedService_IntegerKey/Repository.cs",
+                "Cases/042_KeyedService_IntegerKey/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_FactoryDelegate(DecoWeaverGenerator sut)
+    {
+        // Test keyed service with factory delegate - decorator should still be applied
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/043_KeyedService_FactoryDelegate/Repository.cs",
+                "Cases/043_KeyedService_FactoryDelegate/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_NoDecorators(DecoWeaverGenerator sut)
+    {
+        // Test keyed service without decorators - should pass through
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/044_KeyedService_NoDecorators/Repository.cs",
+                "Cases/044_KeyedService_NoDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedService_Transient(DecoWeaverGenerator sut)
+    {
+        // Test keyed service with Transient lifetime
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/045_KeyedService_Transient/Repository.cs",
+                "Cases/045_KeyedService_Transient/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
 }

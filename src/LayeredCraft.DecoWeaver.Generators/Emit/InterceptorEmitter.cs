@@ -102,6 +102,18 @@ internal static class InterceptorEmitter
                 EmitFactorySingleTypeParamInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
                 break;
 
+            case RegistrationKind.KeyedParameterless:
+                EmitKeyedParameterlessInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
+            case RegistrationKind.KeyedFactoryTwoTypeParams:
+                EmitKeyedFactoryTwoTypeParamsInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
+            case RegistrationKind.KeyedFactorySingleTypeParam:
+                EmitKeyedFactorySingleTypeParamInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
             default:
                 throw new InvalidOperationException($"Unsupported registration kind: {reg.Kind}");
         }
@@ -238,6 +250,148 @@ internal static class InterceptorEmitter
         sb.AppendLine();
     }
 
+    private static void EmitKeyedParameterlessInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var serviceKeyParamName = reg.ServiceKeyParameterName ?? "serviceKey";
+
+        // Emit the method signature matching AddKeyedScoped<T1, T2>(services, object? serviceKey)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}, {implFqn}&gt;(IServiceCollection, object?)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService, TImplementation>(this IServiceCollection services, object? {serviceKeyParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("            where TImplementation : class, TService");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Create nested key to avoid circular resolution");
+            sb.AppendLine($"            var nestedKey = DecoratorKeys.ForKeyed({serviceKeyParamName}, typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register the undecorated implementation with nested key");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}, {implFqn}>(nestedKey);");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory with user's key that applies decorators");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>({serviceKeyParamName}, (sp, key) =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(nestedKey)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, just register normally");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}, {implFqn}>(services, {serviceKeyParamName});");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
+    private static void EmitKeyedFactoryTwoTypeParamsInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var serviceKeyParamName = reg.ServiceKeyParameterName ?? "serviceKey";
+        var factoryParamName = reg.FactoryParameterName ?? "implementationFactory";
+
+        // Emit the method signature matching AddKeyedScoped<T1, T2>(services, object? serviceKey, Func<IServiceProvider, object?, T2>)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}, {implFqn}&gt;(IServiceCollection, object?, Func&lt;IServiceProvider, object?, {implFqn}&gt;)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService, TImplementation>(this IServiceCollection services, object? {serviceKeyParamName}, Func<IServiceProvider, object?, TImplementation> {factoryParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("            where TImplementation : class, TService");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Create nested key to avoid circular resolution");
+            sb.AppendLine($"            var nestedKey = DecoratorKeys.ForKeyed({serviceKeyParamName}, typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register the undecorated implementation with nested key and factory");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(nestedKey, (sp, key) => ({serviceFqn}){factoryParamName}(sp, {serviceKeyParamName}));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory with user's key that applies decorators");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>({serviceKeyParamName}, (sp, key) =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(nestedKey)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, pass through to original method with factory");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}, {implFqn}>(services, {serviceKeyParamName}, {factoryParamName});");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
+    private static void EmitKeyedFactorySingleTypeParamInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var serviceKeyParamName = reg.ServiceKeyParameterName ?? "serviceKey";
+        var factoryParamName = reg.FactoryParameterName ?? "implementationFactory";
+
+        // Emit the method signature matching AddKeyedScoped<T>(services, object? serviceKey, Func<IServiceProvider, object?, T>)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}&gt;(IServiceCollection, object?, Func&lt;IServiceProvider, object?, {serviceFqn}&gt;)</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService>(this IServiceCollection services, object? {serviceKeyParamName}, Func<IServiceProvider, object?, TService> {factoryParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Create nested key to avoid circular resolution");
+            sb.AppendLine($"            var nestedKey = DecoratorKeys.ForKeyed({serviceKeyParamName}, typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register the undecorated implementation with nested key and factory");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(nestedKey, (sp, key) => {factoryParamName}(sp, {serviceKeyParamName}));");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory with user's key that applies decorators");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>({serviceKeyParamName}, (sp, key) =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(nestedKey)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, pass through to original method with factory");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}>(services, {serviceKeyParamName}, {factoryParamName});");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
     private static string AddKeyed(string lifetimeMethod) =>
         lifetimeMethod switch
         {
@@ -255,6 +409,14 @@ internal static class InterceptorEmitter
         sb.AppendLine("                var s = serviceType.AssemblyQualifiedName ?? serviceType.FullName ?? serviceType.Name;");
         sb.AppendLine("                var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;");
         sb.AppendLine("                return string.Concat(s, \"|\", i);");
+        sb.AppendLine("            }");
+        sb.AppendLine();
+        sb.AppendLine("            public static object ForKeyed(object? userKey, Type serviceType, Type implementationType)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                var s = serviceType.AssemblyQualifiedName ?? serviceType.FullName ?? serviceType.Name;");
+        sb.AppendLine("                var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;");
+        sb.AppendLine("                var keyStr = userKey?.ToString() ?? \"null\";");
+        sb.AppendLine("                return string.Concat(keyStr, \"|\", s, \"|\", i);");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();

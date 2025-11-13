@@ -49,6 +49,14 @@ namespace DecoWeaver.Generated
                 var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;
                 return string.Concat(s, "|", i);
             }
+
+            public static object ForKeyed(object? userKey, Type serviceType, Type implementationType)
+            {
+                var s = serviceType.AssemblyQualifiedName ?? serviceType.FullName ?? serviceType.Name;
+                var i = implementationType.AssemblyQualifiedName ?? implementationType.FullName ?? implementationType.Name;
+                var keyStr = userKey?.ToString() ?? "null";
+                return string.Concat(keyStr, "|", s, "|", i);
+            }
         }
 
         private static class DecoratorFactory

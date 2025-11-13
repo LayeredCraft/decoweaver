@@ -10,6 +10,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - No changes yet
 
+## [1.0.3-beta] - 2025-11-13
+
+### Added
+- **Keyed service support** - Decorators now work with keyed service registrations
+  - `AddKeyedScoped<TService, TImplementation>(serviceKey)` - Keyed parameterless registration
+  - `AddKeyedScoped<TService, TImplementation>(serviceKey, factory)` - Keyed with factory delegate (two-parameter)
+  - `AddKeyedScoped<TService>(serviceKey, factory)` - Keyed with factory delegate (single-parameter)
+  - All lifetimes supported: `AddKeyedScoped`, `AddKeyedTransient`, `AddKeyedSingleton`
+  - Multiple keys per service type work independently
+  - All key types supported: string, int, enum, custom objects
+  - Nested key strategy prevents circular resolution while preserving user's original key
+
+### Changed
+- Extended `RegistrationKind` enum with three keyed service variants
+- Added `ServiceKeyParameterName` field to `ClosedGenericRegistration` model
+- Updated `ClosedGenericRegistrationProvider` to detect keyed service signatures (2 or 3 parameters)
+- Updated `InterceptorEmitter` to generate keyed service interceptors with nested key strategy
+- Added `ForKeyed` helper method to `DecoratorKeys` class for nested key generation
+
+### Technical Details
+- Added `RegistrationKind` values: `KeyedParameterless`, `KeyedFactoryTwoTypeParams`, `KeyedFactorySingleTypeParam`
+- Keyed service detection validates `object?` type for service key parameter
+- Factory delegates with keyed services detect `Func<IServiceProvider, object?, T>` signatures
+- Nested key format: `"{userKey}|{ServiceAQN}|{ImplAQN}"` prevents conflicts between keys
+- User's original key preserved for resolution via `GetRequiredKeyedService`
+- 7 new test cases (039-045) covering keyed service scenarios
+- Updated sample project with keyed service examples (string and integer keys, multiple keys)
+- All existing functionality remains unchanged - this is purely additive
+
 ## [1.0.2-beta] - 2025-11-12
 
 ### Added
@@ -35,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated sample project with factory delegate examples demonstrating complex dependencies
 - All existing functionality remains unchanged - this is purely additive
 
-## [1.0.1-beta] - 2025-01-XX
+## [1.0.1-beta] - 2025-11-10
 
 ### Added
 - Assembly-level `[DecorateService(typeof(TService), typeof(TDecorator))]` attribute for applying decorators to all implementations of a service interface

@@ -21,6 +21,11 @@ var serviceProvider = new ServiceCollection()
         var logger = loggerFactory.CreateLogger<RepositoryWithLogger<Product>>();
         return new RepositoryWithLogger<Product>(logger);
     })
+    // Example 5: Keyed service with string key
+    .AddKeyedScoped<IAssemblyInterface<string>, ConcreteClass<string>>("primary")
+    // Example 6: Multiple keyed services with different keys
+    .AddKeyedScoped<IAssemblyInterface<int>, ConcreteClass<int>>("cache")
+    .AddKeyedScoped<IAssemblyInterface<int>, ConcreteClass<int>>("database")
     .BuildServiceProvider();
 
 // Test Example 1: Open generic repository (parameterless)
@@ -49,6 +54,25 @@ Console.WriteLine("=== Example 4: Factory Delegate (Complex Dependencies) ===");
 var productRepo = serviceProvider.GetRequiredService<IRepository<Product>>();
 Console.WriteLine($"Resolved: {productRepo.GetType().Name}");
 productRepo.Save(new Product { Id = 1, Name = "Widget" });
+Console.WriteLine();
+
+// Test Example 5: Keyed service with string key
+Console.WriteLine("=== Example 5: Keyed Service (String Key) ===");
+var primaryService = serviceProvider.GetRequiredKeyedService<IAssemblyInterface<string>>("primary");
+Console.WriteLine($"Resolved: {primaryService.GetType().Name}");
+primaryService.DoSomething("Hello from primary");
+Console.WriteLine();
+
+// Test Example 6: Multiple keyed services with different keys
+Console.WriteLine("=== Example 6: Keyed Services (Multiple Keys) ===");
+var cacheService = serviceProvider.GetRequiredKeyedService<IAssemblyInterface<int>>("cache");
+Console.WriteLine($"Resolved 'cache': {cacheService.GetType().Name}");
+cacheService.DoSomething(42);
+Console.WriteLine();
+
+var databaseService = serviceProvider.GetRequiredKeyedService<IAssemblyInterface<int>>("database");
+Console.WriteLine($"Resolved 'database': {databaseService.GetType().Name}");
+databaseService.DoSomething(100);
 
 public class Customer
 {
