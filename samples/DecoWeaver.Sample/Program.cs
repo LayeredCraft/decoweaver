@@ -27,7 +27,9 @@ var serviceProvider = new ServiceCollection()
     .AddKeyedScoped<IAssemblyInterface<int>, ConcreteClass<int>>("cache")
     .AddKeyedScoped<IAssemblyInterface<int>, ConcreteClass<int>>("database")
     // Example 7: Instance registration (singleton only)
-    .AddSingleton<IRepository<Invoice>>(new DynamoDbRepository<Invoice>())
+    // .AddSingleton<IRepository<Invoice>>(new DynamoDbRepository<Invoice>())
+    .AddSingleton(new DynamoDbRepository<Invoice>())
+    // .AddKeyedSingleton<IRepository<Invoice>>("instance", new DynamoDbRepository<Invoice>())
     .BuildServiceProvider();
 
 // Test Example 1: Open generic repository (parameterless)

@@ -294,7 +294,7 @@ services.AddTransient<IRepository<Customer>>(instance); // Compiler error
 
 **How it works**:
 - Instance type is extracted from the actual argument expression using `SemanticModel.GetTypeInfo(instanceArg).Type`
-- Since keyed services don't have instance overloads, the instance is wrapped in a factory lambda
+- Instance is registered directly as a keyed service (preserves disposal semantics)
 - Decorators are applied around the instance just like other registration types
 
 **Generated code example**:
@@ -305,7 +305,7 @@ services.AddSingleton<IRepository<Customer>>(new SqlRepository<Customer>());
 // What DecoWeaver generates:
 var key = DecoratorKeys.For(typeof(IRepository<Customer>), typeof(SqlRepository<Customer>));
 var capturedInstance = (IRepository<Customer>)(object)implementationInstance;
-services.AddKeyedSingleton<IRepository<Customer>>(key, (sp, _) => capturedInstance);
+services.AddKeyedSingleton<IRepository<Customer>>(key, capturedInstance);
 
 services.AddSingleton<IRepository<Customer>>(sp =>
 {

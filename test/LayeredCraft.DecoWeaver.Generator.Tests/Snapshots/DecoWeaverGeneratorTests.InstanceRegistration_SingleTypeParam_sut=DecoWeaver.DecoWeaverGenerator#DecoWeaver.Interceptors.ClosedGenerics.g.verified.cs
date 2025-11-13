@@ -26,10 +26,9 @@ namespace DecoWeaver.Generated
             where TService : class
         {
             // Register the undecorated instance as a keyed service
-            // Note: Keyed services don't have instance overloads, must use factory
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>), typeof(global::DecoWeaver.Sample.SqlRepository<global::DecoWeaver.Sample.Customer>));
             var capturedInstance = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>)(object)implementationInstance;
-            services.AddKeyedSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(key, (sp, _) => capturedInstance);
+            services.AddKeyedSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(key, capturedInstance);
 
             // Register factory that applies decorators around the instance
             services.AddSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(sp =>

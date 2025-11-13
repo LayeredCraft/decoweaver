@@ -416,10 +416,9 @@ internal static class InterceptorEmitter
         if (decorators.Length > 0)
         {
             sb.AppendLine("            // Register the undecorated instance as a keyed service");
-            sb.AppendLine("            // Note: Keyed services don't have instance overloads, must use factory");
             sb.AppendLine($"            var key = DecoratorKeys.For(typeof({serviceFqn}), typeof({implFqn}));");
             sb.AppendLine($"            var capturedInstance = ({serviceFqn})(object){instanceParamName};");
-            sb.AppendLine($"            services.{AddKeyed(methodName)}<{serviceFqn}>(key, (sp, _) => capturedInstance);");
+            sb.AppendLine($"            services.{AddKeyed(methodName)}<{serviceFqn}>(key, capturedInstance);");
             sb.AppendLine();
             sb.AppendLine("            // Register factory that applies decorators around the instance");
             sb.AppendLine($"            services.{methodName}<{serviceFqn}>(sp =>");

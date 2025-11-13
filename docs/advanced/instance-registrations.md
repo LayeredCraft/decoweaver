@@ -53,12 +53,12 @@ When DecoWeaver encounters an instance registration:
    // - Implementation type: SqlRepository<Customer> (extracted from "new SqlRepository<Customer>()")
    ```
 
-2. **Keyed Service Registration**: Since keyed services don't have instance overloads, the instance is wrapped in a factory lambda
+2. **Keyed Service Registration**: The instance is registered directly as a keyed service
    ```csharp
    // Generated code:
    var key = DecoratorKeys.For(typeof(IRepository<Customer>), typeof(SqlRepository<Customer>));
    var capturedInstance = (IRepository<Customer>)(object)implementationInstance;
-   services.AddKeyedSingleton<IRepository<Customer>>(key, (sp, _) => capturedInstance);
+   services.AddKeyedSingleton<IRepository<Customer>>(key, capturedInstance);
    ```
 
 3. **Decorator Application**: Decorators are applied around the keyed service
@@ -142,18 +142,18 @@ if (args.Count >= 1)
 }
 ```
 
-### Factory Lambda Wrapping
+### Direct Instance Registration
 
-Since keyed services (`AddKeyedSingleton`) don't have instance overloads in .NET DI, DecoWeaver wraps the instance in a factory lambda:
+DecoWeaver uses the direct instance overload available in .NET DI for keyed singleton services:
 
 ```csharp
-// Instead of (doesn't exist in .NET DI):
-services.AddKeyedSingleton<T>(key, instance);
-
 // DecoWeaver generates:
-var capturedInstance = (TService)(object)implementationInstance;
-services.AddKeyedSingleton<T>(key, (sp, _) => capturedInstance);
+var key = DecoratorKeys.For(typeof(IRepository<Customer>), typeof(SqlRepository<Customer>));
+var capturedInstance = (IRepository<Customer>)(object)implementationInstance;
+services.AddKeyedSingleton<IRepository<Customer>>(key, capturedInstance);
 ```
+
+This preserves the expected .NET DI disposal semantics - the container owns and disposes the instance when the container is disposed, just like non-keyed singleton instance registrations.
 
 The double cast `(TService)(object)` ensures the generic type parameter `TService` is compatible with the captured instance.
 
