@@ -75,6 +75,7 @@ For more examples including open generics, multiple decorators, and ordering, se
 - **Class-Level Decorators**: Apply decorators to specific implementations with `[DecoratedBy<T>]`
 - **Keyed Service Support**: Works with keyed service registrations like `AddKeyedScoped<T, Impl>(serviceKey)`
 - **Factory Delegate Support**: Works with factory registrations like `AddScoped<T, Impl>(sp => new Impl(...))`
+- **Instance Registration Support**: Works with singleton instances like `AddSingleton<T>(instance)`
 - **Opt-Out Support**: Exclude specific decorators with `[DoNotDecorate]`
 - **Multiple Decorators**: Stack multiple decorators with explicit ordering
 - **Generic Type Decoration**: Decorate generic types like `IRepository<T>` with open generic decorators

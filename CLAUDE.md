@@ -189,6 +189,9 @@ services.AddScoped<IRepository<User>>(sp => new Repository<User>());
 services.AddKeyedScoped<IRepository<User>, Repository<User>>("sql");
 services.AddKeyedScoped<IRepository<User>, Repository<User>>("sql", (sp, key) => new Repository<User>());
 
+// ✅ Instance registration (singleton only) - INTERCEPTED by DecoWeaver (v1.0.4+)
+services.AddSingleton<IRepository<User>>(new Repository<User>());
+
 // ❌ Open generic registration - NOT intercepted
 services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 ```
@@ -273,6 +276,49 @@ var sqlRepo = serviceProvider.GetRequiredKeyedService<IRepository<User>>("sql");
 - All key types supported: `string`, `int`, `enum`, custom objects
 - Multiple keys for same service type work independently
 - Each keyed registration is intercepted separately
+
+### Instance Registration Support (v1.0.4+)
+
+DecoWeaver supports singleton instance registrations. This allows decorators to be applied to pre-created instances.
+
+**Instance registration**:
+```csharp
+// ✅ Supported - AddSingleton with instance
+var instance = new SqlRepository<Customer>();
+services.AddSingleton<IRepository<Customer>>(instance);
+
+// ❌ NOT supported - AddScoped/AddTransient don't have instance overloads in .NET DI
+services.AddScoped<IRepository<Customer>>(instance); // Compiler error
+services.AddTransient<IRepository<Customer>>(instance); // Compiler error
+```
+
+**How it works**:
+- Instance type is extracted from the actual argument expression using `SemanticModel.GetTypeInfo(instanceArg).Type`
+- Since keyed services don't have instance overloads, the instance is wrapped in a factory lambda
+- Decorators are applied around the instance just like other registration types
+
+**Generated code example**:
+```csharp
+// User code:
+services.AddSingleton<IRepository<Customer>>(new SqlRepository<Customer>());
+
+// What DecoWeaver generates:
+var key = DecoratorKeys.For(typeof(IRepository<Customer>), typeof(SqlRepository<Customer>));
+var capturedInstance = (IRepository<Customer>)(object)implementationInstance;
+services.AddKeyedSingleton<IRepository<Customer>>(key, (sp, _) => capturedInstance);
+
+services.AddSingleton<IRepository<Customer>>(sp =>
+{
+    var current = sp.GetRequiredKeyedService<IRepository<Customer>>(key);
+    current = (IRepository<Customer>)DecoratorFactory.Create(sp, typeof(IRepository<Customer>), typeof(LoggingRepository<>), current);
+    return current;
+});
+```
+
+**Limitations**:
+- Only `AddSingleton` is supported (instance registrations don't exist for Scoped/Transient in .NET DI)
+- The instance must be created before registration (can't use DI for instance construction)
+- All resolutions return decorators wrapping the same singleton instance
 
 ### Attribute Compilation
 

@@ -18,7 +18,9 @@ internal enum RegistrationKind
     /// <summary>Keyed factory with two type params: AddKeyedScoped&lt;T1, T2&gt;(object? serviceKey, Func&lt;IServiceProvider, object?, T2&gt;)</summary>
     KeyedFactoryTwoTypeParams,
     /// <summary>Keyed factory with single type param: AddKeyedScoped&lt;T&gt;(object? serviceKey, Func&lt;IServiceProvider, object?, T&gt;)</summary>
-    KeyedFactorySingleTypeParam
+    KeyedFactorySingleTypeParam,
+    /// <summary>Instance with single type param: AddSingleton&lt;T&gt;(T implementationInstance)</summary>
+    InstanceSingleTypeParam
 }
 
 internal readonly record struct ClosedGenericRegistration(
@@ -30,13 +32,15 @@ internal readonly record struct ClosedGenericRegistration(
     string InterceptsData, // "file|start|length"
     RegistrationKind Kind = RegistrationKind.Parameterless,
     string? FactoryParameterName = null, // Parameter name from the original registration (e.g., "implementationFactory")
-    string? ServiceKeyParameterName = null // Parameter name for keyed services (e.g., "serviceKey")
+    string? ServiceKeyParameterName = null, // Parameter name for keyed services (e.g., "serviceKey")
+    string? InstanceParameterName = null // Parameter name for instance registrations (e.g., "implementationInstance")
 );
 
 internal readonly record struct RegistrationValidationResult(
     RegistrationKind Kind,
     string? FactoryParameterName,
-    string? ServiceKeyParameterName
+    string? ServiceKeyParameterName,
+    string? InstanceParameterName
 );
 
 /// <summary>
@@ -58,8 +62,7 @@ internal static class ClosedGenericRegistrationProvider
     {
         if (ctx.Node is not InvocationExpressionSyntax inv) return null;
 
-        var symbol = ctx.SemanticModel.GetSymbolInfo(inv).Symbol as IMethodSymbol;
-        if (symbol is null) return null;
+        if (ctx.SemanticModel.GetSymbolInfo(inv).Symbol is not IMethodSymbol symbol) return null;
 
         // For extension methods, we want the unreduced (static) form to check the containing type
         var symbolToCheck = symbol.ReducedFrom ?? symbol;
@@ -86,7 +89,7 @@ internal static class ClosedGenericRegistrationProvider
         if (validationResult is null) return null;
 
         // Extract service and implementation types
-        var (svc, impl) = ExtractServiceAndImplementationTypes(symbol);
+        var (svc, impl) = ExtractServiceAndImplementationTypes(symbol, validationResult.Value.Kind, inv, ctx.SemanticModel);
         if (svc is null || impl is null) return null;
 
         // Get interceptable location
@@ -106,7 +109,8 @@ internal static class ClosedGenericRegistrationProvider
             InterceptsData: interceptsData,
             Kind: validationResult.Value.Kind,
             FactoryParameterName: validationResult.Value.FactoryParameterName,
-            ServiceKeyParameterName: validationResult.Value.ServiceKeyParameterName
+            ServiceKeyParameterName: validationResult.Value.ServiceKeyParameterName,
+            InstanceParameterName: validationResult.Value.InstanceParameterName
         );
     }
 
@@ -125,15 +129,42 @@ internal static class ClosedGenericRegistrationProvider
         {
             // Parameterless registration: AddScoped<T1, T2>()
             if (symbol.TypeArguments.Length != 2) return null;
-            return new RegistrationValidationResult(RegistrationKind.Parameterless, null, null);
+            return new RegistrationValidationResult(RegistrationKind.Parameterless, null, null, null);
         }
 
-        // Factory delegate registration (paramCount == 2)
-        var factoryParam = symbolToCheck.Parameters[1];
-        if (!ValidateFactoryDelegate(factoryParam, expectedArgCount: 2, out var funcReturnType))
+        // paramCount == 2 - could be factory delegate OR instance registration
+        var param2 = symbolToCheck.Parameters[1];
+
+        // Check if it's an instance parameter (not a delegate)
+        if (!IsFactoryDelegate(param2))
+        {
+            // ONLY accept AddSingleton for instance registrations
+            if (symbol.Name != "AddSingleton") return null;
+
+            // Instance registrations ONLY exist with single type parameter in .NET DI
+            // AddSingleton<TService>(TService implementationInstance)
+            // There is NO AddSingleton<TService, TImplementation>(TImplementation) overload
+            if (symbol.TypeArguments.Length != 1) return null;
+
+            var instanceParamName = param2.Name;
+
+            // param2.Type should be the TService type parameter from the method signature
+            var svcTypeParam = symbolToCheck.TypeParameters.Length >= 1 ? symbolToCheck.TypeParameters[0] : null;
+            if (svcTypeParam == null || !SymbolEqualityComparer.Default.Equals(param2.Type, svcTypeParam))
+                return null;
+
+            return new RegistrationValidationResult(
+                RegistrationKind.InstanceSingleTypeParam,
+                null,
+                null,
+                instanceParamName);
+        }
+
+        // Factory delegate registration
+        if (!ValidateFactoryDelegate(param2, expectedArgCount: 2, out var funcReturnType))
             return null;
 
-        var factoryParamName = factoryParam.Name;
+        var factoryParamName = param2.Name;
 
         if (symbol.TypeArguments.Length == 2)
         {
@@ -141,18 +172,20 @@ internal static class ClosedGenericRegistrationProvider
             return new RegistrationValidationResult(
                 RegistrationKind.FactoryTwoTypeParams,
                 factoryParamName,
+                null,
                 null);
         }
 
         // AddScoped<TService>(Func<IServiceProvider, TService>)
         // Verify factory return type matches TService (only type arg)
-        var svcTypeArg = symbol.TypeArguments[0];
-        if (!SymbolEqualityComparer.Default.Equals(funcReturnType, svcTypeArg))
+        var svcTypeArg2 = symbol.TypeArguments[0];
+        if (!SymbolEqualityComparer.Default.Equals(funcReturnType, svcTypeArg2))
             return null;
 
         return new RegistrationValidationResult(
             RegistrationKind.FactorySingleTypeParam,
             factoryParamName,
+            null,
             null);
     }
 
@@ -179,7 +212,8 @@ internal static class ClosedGenericRegistrationProvider
             return new RegistrationValidationResult(
                 RegistrationKind.KeyedParameterless,
                 null,
-                serviceKeyParamName);
+                serviceKeyParamName,
+                null);
         }
 
         // Keyed factory delegate registration (paramCount == 3)
@@ -195,7 +229,8 @@ internal static class ClosedGenericRegistrationProvider
             return new RegistrationValidationResult(
                 RegistrationKind.KeyedFactoryTwoTypeParams,
                 factoryParamName,
-                serviceKeyParamName);
+                serviceKeyParamName,
+                null);
         }
 
         // AddKeyedScoped<TService>(key, Func<IServiceProvider, object?, TService>)
@@ -207,7 +242,15 @@ internal static class ClosedGenericRegistrationProvider
         return new RegistrationValidationResult(
             RegistrationKind.KeyedFactorySingleTypeParam,
             factoryParamName,
-            serviceKeyParamName);
+            serviceKeyParamName,
+            null);
+    }
+
+    private static bool IsFactoryDelegate(IParameterSymbol param)
+    {
+        if (param.Type is not INamedTypeSymbol namedType) return false;
+        var originalDef = namedType.OriginalDefinition.ToDisplayString();
+        return originalDef == "System.Func<T, TResult>" || originalDef == "System.Func<T1, T2, TResult>";
     }
 
     private static bool ValidateFactoryDelegate(
@@ -256,7 +299,10 @@ internal static class ClosedGenericRegistrationProvider
     }
 
     private static (INamedTypeSymbol? Service, INamedTypeSymbol? Implementation) ExtractServiceAndImplementationTypes(
-        IMethodSymbol symbol)
+        IMethodSymbol symbol,
+        RegistrationKind kind,
+        InvocationExpressionSyntax inv,
+        SemanticModel semanticModel)
     {
         if (symbol.TypeArguments.Length == 2)
         {
@@ -265,10 +311,30 @@ internal static class ClosedGenericRegistrationProvider
             return (svc, impl);
         }
 
-        // For single type param factory: AddScoped<T>(factory)
-        // Both service and implementation are the same type
-        var type = symbol.TypeArguments[0] as INamedTypeSymbol;
-        return (type, type);
+        // For single type param: AddScoped<T>(...)
+        var serviceType = symbol.TypeArguments[0] as INamedTypeSymbol;
+
+        // For instance registrations, extract the actual implementation type from the argument
+        if (kind == RegistrationKind.InstanceSingleTypeParam)
+        {
+            // Get the actual argument expression (the instance being passed)
+            // For: services.AddSingleton<IRepository<Customer>>(instance)
+            // We need to get the type of 'instance'
+            // Note: Extension method syntax doesn't include 'this' parameter in ArgumentList
+            var args = inv.ArgumentList.Arguments;
+            if (args.Count >= 1) // Just the instance parameter
+            {
+                var instanceArg = args[0].Expression;
+                var instanceType = semanticModel.GetTypeInfo(instanceArg).Type as INamedTypeSymbol;
+                if (instanceType != null)
+                {
+                    return (serviceType, instanceType);
+                }
+            }
+        }
+
+        // For factory delegates or if we can't determine the instance type, use the service type for both
+        return (serviceType, serviceType);
     }
 
     private static string? GetInterceptsData(SemanticModel semanticModel, InvocationExpressionSyntax inv)
