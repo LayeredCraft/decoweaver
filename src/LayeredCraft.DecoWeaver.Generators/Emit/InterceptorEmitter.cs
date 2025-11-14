@@ -114,6 +114,14 @@ internal static class InterceptorEmitter
                 EmitKeyedFactorySingleTypeParamInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
                 break;
 
+            case RegistrationKind.InstanceSingleTypeParam:
+                EmitInstanceSingleTypeParamInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
+            case RegistrationKind.KeyedInstanceSingleTypeParam:
+                EmitKeyedInstanceSingleTypeParamInterceptor(sb, methodName, reg, methodIndex, serviceFqn, implFqn, decorators);
+                break;
+
             default:
                 throw new InvalidOperationException($"Unsupported registration kind: {reg.Kind}");
         }
@@ -386,6 +394,99 @@ internal static class InterceptorEmitter
         {
             sb.AppendLine("            // No decorators, pass through to original method with factory");
             sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}>(services, {serviceKeyParamName}, {factoryParamName});");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
+    private static void EmitInstanceSingleTypeParamInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var instanceParamName = reg.InstanceParameterName ?? "implementationInstance";
+
+        // Emit the method signature matching AddSingleton<T>(services, T instance)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}&gt;(IServiceCollection, {serviceFqn})</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService>(this IServiceCollection services, TService {instanceParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Register the undecorated instance as a keyed service");
+            sb.AppendLine($"            var key = DecoratorKeys.For(typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine($"            var capturedInstance = ({serviceFqn})(object){instanceParamName};");
+            sb.AppendLine($"            services.{AddKeyed(methodName)}<{serviceFqn}>(key, capturedInstance);");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory that applies decorators around the instance");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(sp =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(key)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, pass through to original method with instance");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}>(services, {instanceParamName});");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine();
+    }
+
+    private static void EmitKeyedInstanceSingleTypeParamInterceptor(
+        StringBuilder sb,
+        string methodName,
+        ClosedGenericRegistration reg,
+        int methodIndex,
+        string serviceFqn,
+        string implFqn,
+        string[] decorators)
+    {
+        var serviceKeyParamName = reg.ServiceKeyParameterName ?? "serviceKey";
+        var instanceParamName = reg.InstanceParameterName ?? "implementationInstance";
+
+        // Emit the method signature matching AddKeyedSingleton<T>(services, object? serviceKey, T instance)
+        sb.AppendLine($"        /// <summary>Intercepted: ServiceCollectionServiceExtensions.{methodName}&lt;{serviceFqn}&gt;(IServiceCollection, object?, {serviceFqn})</summary>");
+        sb.AppendLine($"        internal static IServiceCollection {methodName}_{methodIndex}<TService>(this IServiceCollection services, object? {serviceKeyParamName}, TService {instanceParamName})");
+        sb.AppendLine("            where TService : class");
+        sb.AppendLine("        {");
+
+        if (decorators.Length > 0)
+        {
+            sb.AppendLine("            // Create nested key to avoid circular resolution");
+            sb.AppendLine($"            var nestedKey = DecoratorKeys.ForKeyed({serviceKeyParamName}, typeof({serviceFqn}), typeof({implFqn}));");
+            sb.AppendLine($"            var capturedInstance = ({serviceFqn})(object){instanceParamName};");
+            sb.AppendLine();
+            sb.AppendLine("            // Register the undecorated instance with nested key");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>(nestedKey, capturedInstance);");
+            sb.AppendLine();
+            sb.AppendLine("            // Register factory with user's key that applies decorators around the instance");
+            sb.AppendLine($"            services.{methodName}<{serviceFqn}>({serviceKeyParamName}, (sp, key) =>");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var current = ({serviceFqn})sp.GetRequiredKeyedService<{serviceFqn}>(nestedKey)!;");
+            sb.AppendLine("                // Compose decorators (innermost to outermost)");
+            foreach (var deco in decorators)
+                sb.AppendLine($"                current = ({serviceFqn})DecoratorFactory.Create(sp, typeof({serviceFqn}), typeof({deco}), current);");
+            sb.AppendLine("                return current;");
+            sb.AppendLine("            });");
+            sb.AppendLine("            return services;");
+        }
+        else
+        {
+            sb.AppendLine("            // No decorators, pass through to original method with instance");
+            sb.AppendLine($"            return Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.{methodName}<{serviceFqn}>(services, {serviceKeyParamName}, {instanceParamName});");
         }
 
         sb.AppendLine("        }");

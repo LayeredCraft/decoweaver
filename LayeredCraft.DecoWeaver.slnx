@@ -56,7 +56,7 @@
     <File Path=".github\workflows\docs.yml" />
   </Folder>
   <Folder Name="/samples/">
-    <Project Path="samples\DecoWeaver.Sample\DecoWeaver.Sample.csproj" Type="Classic C#" />
+    <Project Path="samples\DecoWeaver.Sample\DecoWeaver.Sample.csproj" Type="C#" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
@@ -64,10 +64,10 @@
     <File Path="releasenotes.props" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" Type="Classic C#" />
+    <Project Path="src\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" Type="C#" />
     <Project Path="src\LayeredCraft.DecoWeaver.Generators\LayeredCraft.DecoWeaver.Generators.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test\LayeredCraft.DecoWeaver.Generator.Tests\LayeredCraft.DecoWeaver.Generator.Tests.csproj" Type="Classic C#" />
+    <Project Path="test\LayeredCraft.DecoWeaver.Generator.Tests\LayeredCraft.DecoWeaver.Generator.Tests.csproj" Type="C#" />
   </Folder>
 </Solution>

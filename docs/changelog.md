@@ -10,6 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - No changes yet
 
+## [1.0.4-beta] - 2025-11-13
+
+### Added
+- **Instance registration support** - Decorators now work with singleton instance registrations
+  - `AddSingleton<TService>(instance)` - Single type parameter with instance
+  - Decorators are applied around the provided instance
+  - Only `AddSingleton` is supported (instance registrations don't exist for Scoped/Transient in .NET DI)
+
+### Changed
+- Extended `RegistrationKind` enum with `InstanceSingleTypeParam` variant
+- Added `InstanceParameterName` field to `ClosedGenericRegistration` model
+- Updated `ClosedGenericRegistrationProvider` to detect instance registrations (non-delegate second parameter)
+- Updated `InterceptorEmitter` to generate instance interceptors with factory lambda wrapping
+- Instance type is extracted from the actual argument expression (e.g., `new SqlRepository<Customer>()`)
+- Instances are registered as keyed services via factory lambda (keyed services don't have instance overloads)
+
+### Technical Details
+- Instance detection: parameter type must match type parameter and NOT be a `Func<>` delegate
+- Only `AddSingleton` accepted - `AddScoped`/`AddTransient` don't support instance parameters in .NET DI
+- Instance wrapped in factory lambda: `services.AddKeyedSingleton<T>(key, (sp, _) => capturedInstance)`
+- Type extraction uses `SemanticModel.GetTypeInfo(instanceArg).Type` to get actual implementation type
+- Extension method ArgumentList doesn't include `this` parameter, so instance is at `args[0]`
+- 3 new test cases (047-049) covering instance registration scenarios
+- Updated sample project with instance registration example
+- All existing functionality remains unchanged - this is purely additive
+
 ## [1.0.3-beta] - 2025-11-13
 
 ### Added

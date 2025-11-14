@@ -575,4 +575,57 @@ public class DecoWeaverGeneratorTests
             ],
             featureFlags: FeatureFlags);
     }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task InstanceRegistration_SingleTypeParam(DecoWeaverGenerator sut)
+    {
+        // Test instance registration with single type parameter
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/047_InstanceRegistration_SingleTypeParam/Repository.cs",
+                "Cases/047_InstanceRegistration_SingleTypeParam/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task InstanceRegistration_MultipleDecorators(DecoWeaverGenerator sut)
+    {
+        // Test instance registration with multiple ordered decorators
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/048_InstanceRegistration_MultipleDecorators/Repository.cs",
+                "Cases/048_InstanceRegistration_MultipleDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task InstanceRegistration_NoDecorators(DecoWeaverGenerator sut)
+    {
+        // Test instance registration without decorators - should pass through
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/049_InstanceRegistration_NoDecorators/Repository.cs",
+                "Cases/049_InstanceRegistration_NoDecorators/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedInstanceRegistration_SingleDecorator(DecoWeaverGenerator sut)
+    {
+        // Test keyed instance registration with single decorator
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/051_KeyedInstanceRegistration_SingleDecorator/Repository.cs",
+                "Cases/051_KeyedInstanceRegistration_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
 }
