@@ -1,0 +1,7 @@
+namespace System.Runtime.CompilerServices
+{
+    file sealed class InterceptsLocationAttribute : Attribute
+    {
+        public InterceptsLocationAttribute(int version, string data) { }
+    }
+}

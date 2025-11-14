@@ -1,0 +1,15 @@
+        private static class DecoratorFactory
+        {
+            public static object Create(IServiceProvider sp, Type serviceType, Type decoratorOpenOrClosed, object inner)
+            {
+                var closedType = CloseIfNeeded(decoratorOpenOrClosed, serviceType);
+                return ActivatorUtilities.CreateInstance(sp, closedType, inner)!;
+            }
+
+            private static Type CloseIfNeeded(Type t, Type serviceType)
+            {
+                if (!t.IsGenericTypeDefinition) return t;
+                var args = serviceType.IsGenericType ? serviceType.GetGenericArguments() : Type.EmptyTypes;
+                return t.MakeGenericType(args);
+            }
+        }

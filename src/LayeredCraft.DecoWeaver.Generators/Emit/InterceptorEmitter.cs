@@ -2,6 +2,7 @@
 
 using System.Text;
 using DecoWeaver.Model;
+using DecoWeaver.OutputGenerators;
 using DecoWeaver.Providers;
 using DecoWeaver.Util;
 using Microsoft.CodeAnalysis.CSharp;
@@ -21,7 +22,9 @@ internal static class InterceptorEmitter
         sb.AppendLine("#nullable enable");
         sb.AppendLine();
 
-        EmitInterceptsLocationAttribute(sb);
+        // Emit InterceptsLocationAttribute first (needs to be at global level)
+        sb.AppendLine(CommonSources.GenerateInterceptsLocationAttribute());
+        sb.AppendLine();
 
         sb.AppendLine("namespace DecoWeaver.Generated");
         sb.AppendLine("{");
@@ -50,8 +53,11 @@ internal static class InterceptorEmitter
             }
         }
 
-        EmitHelpers(sb);
-
+        // Emit helper classes (DecoratorKeys, DecoratorFactory) at end of class
+        sb.AppendLine(CommonSources.GenerateDecoratorKeys());
+        sb.AppendLine();
+        sb.AppendLine(CommonSources.GenerateDecoratorFactory());
+        sb.AppendLine();
         sb.AppendLine("    }"); // class
         sb.AppendLine("}"); // namespace
         return sb.ToString();

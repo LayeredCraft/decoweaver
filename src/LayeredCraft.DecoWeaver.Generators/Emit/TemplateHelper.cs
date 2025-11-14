@@ -1,22 +1,40 @@
 // DecoWeaver/Emit/TemplateHelper.cs
 
+using System.Collections.Concurrent;
 using System.Reflection;
 using Scriban;
 
 namespace DecoWeaver.Emit;
 
 /// <summary>
-/// Helper class for loading and validating Scriban templates from embedded resources.
+/// Helper class for loading, caching, and rendering Scriban templates from embedded resources.
 /// </summary>
 internal static class TemplateHelper
 {
+    private static readonly ConcurrentDictionary<string, Template> Cache = new();
+
+    /// <summary>
+    /// Renders a Scriban template with the provided model.
+    /// Templates are cached after first load for performance.
+    /// </summary>
+    /// <typeparam name="TModel">The type of the model to render</typeparam>
+    /// <param name="resourceName">Relative path to the template resource (e.g., "Templates.Common.InterceptsLocationAttribute.scriban")</param>
+    /// <param name="model">The model object to render with the template</param>
+    /// <returns>Rendered template as a string</returns>
+    /// <exception cref="InvalidOperationException">Thrown if template is not found or has parsing errors</exception>
+    internal static string Render<TModel>(string resourceName, TModel model)
+    {
+        var template = Cache.GetOrAdd(resourceName, LoadTemplate);
+        return template.Render(model, member => member.Name);
+    }
+
     /// <summary>
     /// Loads a Scriban template from embedded resources.
     /// </summary>
     /// <param name="relativePath">Relative path to the template resource (e.g., "Templates.Common.InterceptsLocationAttribute.scriban")</param>
     /// <returns>Parsed Scriban template ready for rendering</returns>
     /// <exception cref="InvalidOperationException">Thrown if template is not found or has parsing errors</exception>
-    internal static Template LoadTemplate(string relativePath)
+    private static Template LoadTemplate(string relativePath)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var baseName = assembly.GetName().Name;
@@ -53,14 +71,12 @@ internal static class TemplateHelper
         var templateContent = reader.ReadToEnd();
 
         // Parse and validate the template
-        var template = Template.Parse(templateContent);
-        if (template.HasErrors)
-        {
-            var errors = string.Join("; ", template.Messages.Select(m => m.ToString()));
-            throw new InvalidOperationException(
-                $"Template parsing errors in '{templateName}': {errors}");
-        }
+        var template = Template.Parse(templateContent, sourceFilePath: relativePath);
+        if (!template.HasErrors) return template;
+        var errors = string.Join("\n",
+            template.Messages.Select(m => $"{relativePath}({m.Span.Start.Line},{m.Span.Start.Column}): {m.Message}"));
+        throw new InvalidOperationException(
+            $"Failed to parse template '{relativePath}':\n{errors}");
 
-        return template;
     }
 }
