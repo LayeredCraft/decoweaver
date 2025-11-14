@@ -20,6 +20,18 @@ var repo = serviceProvider.GetRequiredService<IRepository<Customer>>();
 // Returns: LoggingRepository<Customer> wrapping SqlRepository<Customer> instance
 ```
 
+### Keyed Instance Registration
+
+```csharp
+// Register a pre-created instance with a key
+var instance = new SqlRepository<Customer>();
+services.AddKeyedSingleton<IRepository<Customer>>("primary", instance);
+
+// Resolve using the same key
+var repo = serviceProvider.GetRequiredKeyedService<IRepository<Customer>>("primary");
+// Returns: LoggingRepository<Customer> wrapping SqlRepository<Customer> instance
+```
+
 ## Limitations
 
 ### Singleton Only
@@ -125,6 +137,25 @@ services.AddSingleton<IRepository<Order>>(instance);
 // Decorators are applied, but the pre-configured instance is preserved
 ```
 
+### Keyed Instance with Multiple Configurations
+
+```csharp
+[DecoratedBy<LoggingRepository<>>]
+public class SqlRepository<T> : IRepository<T> { /* ... */ }
+
+// Register multiple instances with different configurations
+var primaryDb = new SqlRepository<Customer>("Server=primary;Database=Main");
+var secondaryDb = new SqlRepository<Customer>("Server=secondary;Database=Replica");
+
+services.AddKeyedSingleton<IRepository<Customer>>("primary", primaryDb);
+services.AddKeyedSingleton<IRepository<Customer>>("secondary", secondaryDb);
+
+// Each key resolves its own instance with decorators applied
+var primary = serviceProvider.GetRequiredKeyedService<IRepository<Customer>>("primary");
+var secondary = serviceProvider.GetRequiredKeyedService<IRepository<Customer>>("secondary");
+// Both are wrapped with LoggingRepository, but use different SqlRepository instances
+```
+
 ## Technical Details
 
 ### Type Extraction from Arguments
@@ -132,13 +163,21 @@ services.AddSingleton<IRepository<Order>>(instance);
 DecoWeaver uses Roslyn's semantic model to extract the actual type from the instance argument:
 
 ```csharp
-// In ClosedGenericRegistrationProvider.cs
+// In ClosedGenericRegistrationProvider.cs - Non-keyed instance
 var args = inv.ArgumentList.Arguments;
 if (args.Count >= 1)
 {
     var instanceArg = args[0].Expression; // Extension methods don't include 'this' in ArgumentList
     var instanceType = semanticModel.GetTypeInfo(instanceArg).Type as INamedTypeSymbol;
     return (serviceType, instanceType); // e.g., (IRepository<Customer>, SqlRepository<Customer>)
+}
+
+// For keyed instances
+if (args.Count >= 2) // Key parameter + instance parameter
+{
+    var instanceArg = args[1].Expression; // Second argument after the key
+    var instanceType = semanticModel.GetTypeInfo(instanceArg).Type as INamedTypeSymbol;
+    return (serviceType, instanceType);
 }
 ```
 

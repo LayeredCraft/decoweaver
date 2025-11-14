@@ -20,7 +20,9 @@ internal enum RegistrationKind
     /// <summary>Keyed factory with single type param: AddKeyedScoped&lt;T&gt;(object? serviceKey, Func&lt;IServiceProvider, object?, T&gt;)</summary>
     KeyedFactorySingleTypeParam,
     /// <summary>Instance with single type param: AddSingleton&lt;T&gt;(T implementationInstance)</summary>
-    InstanceSingleTypeParam
+    InstanceSingleTypeParam,
+    /// <summary>Keyed instance with single type param: AddKeyedSingleton&lt;T&gt;(object? serviceKey, T implementationInstance)</summary>
+    KeyedInstanceSingleTypeParam
 }
 
 internal readonly record struct ClosedGenericRegistration(
@@ -216,12 +218,39 @@ internal static class ClosedGenericRegistrationProvider
                 null);
         }
 
-        // Keyed factory delegate registration (paramCount == 3)
-        var factoryParam = symbolToCheck.Parameters[2];
-        if (!ValidateKeyedFactoryDelegate(factoryParam, out var funcReturnType))
+        // paramCount == 3 - could be keyed factory delegate OR keyed instance registration
+        var param3 = symbolToCheck.Parameters[2];
+
+        // Check if it's a keyed instance parameter (not a delegate)
+        if (!IsKeyedFactoryDelegate(param3))
+        {
+            // ONLY accept AddKeyedSingleton for keyed instance registrations
+            if (symbol.Name != "AddKeyedSingleton") return null;
+
+            // Keyed instance registrations ONLY exist with single type parameter in .NET DI
+            // AddKeyedSingleton<TService>(object? serviceKey, TService implementationInstance)
+            // There is NO AddKeyedSingleton<TService, TImplementation>(key, TImplementation) overload
+            if (symbol.TypeArguments.Length != 1) return null;
+
+            var instanceParamName = param3.Name;
+
+            // param3.Type should be the TService type parameter from the method signature
+            var svcTypeParam = symbolToCheck.TypeParameters.Length >= 1 ? symbolToCheck.TypeParameters[0] : null;
+            if (svcTypeParam == null || !SymbolEqualityComparer.Default.Equals(param3.Type, svcTypeParam))
+                return null;
+
+            return new RegistrationValidationResult(
+                RegistrationKind.KeyedInstanceSingleTypeParam,
+                null,
+                serviceKeyParamName,
+                instanceParamName);
+        }
+
+        // Keyed factory delegate registration
+        if (!ValidateKeyedFactoryDelegate(param3, out var funcReturnType))
             return null;
 
-        var factoryParamName = factoryParam.Name;
+        var factoryParamName = param3.Name;
 
         if (symbol.TypeArguments.Length == 2)
         {
@@ -244,6 +273,13 @@ internal static class ClosedGenericRegistrationProvider
             factoryParamName,
             serviceKeyParamName,
             null);
+    }
+
+    private static bool IsKeyedFactoryDelegate(IParameterSymbol param)
+    {
+        if (param.Type is not INamedTypeSymbol namedType) return false;
+        var originalDef = namedType.OriginalDefinition.ToDisplayString();
+        return originalDef == "System.Func<T1, T2, TResult>";
     }
 
     private static bool IsFactoryDelegate(IParameterSymbol param)
@@ -325,6 +361,25 @@ internal static class ClosedGenericRegistrationProvider
             if (args.Count >= 1) // Just the instance parameter
             {
                 var instanceArg = args[0].Expression;
+                var instanceType = semanticModel.GetTypeInfo(instanceArg).Type as INamedTypeSymbol;
+                if (instanceType != null)
+                {
+                    return (serviceType, instanceType);
+                }
+            }
+        }
+
+        // For keyed instance registrations, extract the actual implementation type from the argument
+        if (kind == RegistrationKind.KeyedInstanceSingleTypeParam)
+        {
+            // Get the actual argument expression (the instance being passed)
+            // For: services.AddKeyedSingleton<IRepository<Customer>>("key", instance)
+            // We need to get the type of 'instance' (second argument after the key)
+            // Note: Extension method syntax doesn't include 'this' parameter in ArgumentList
+            var args = inv.ArgumentList.Arguments;
+            if (args.Count >= 2) // Key parameter + instance parameter
+            {
+                var instanceArg = args[1].Expression;
                 var instanceType = semanticModel.GetTypeInfo(instanceArg).Type as INamedTypeSymbol;
                 if (instanceType != null)
                 {

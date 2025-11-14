@@ -615,4 +615,17 @@ public class DecoWeaverGeneratorTests
             featureFlags: FeatureFlags);
     }
 
+    [Theory]
+    [GeneratorAutoData]
+    public async Task KeyedInstanceRegistration_SingleDecorator(DecoWeaverGenerator sut)
+    {
+        // Test keyed instance registration with single decorator
+        await VerifyGlue.VerifySourcesAsync(sut,
+            [
+                "Cases/051_KeyedInstanceRegistration_SingleDecorator/Repository.cs",
+                "Cases/051_KeyedInstanceRegistration_SingleDecorator/Program.cs"
+            ],
+            featureFlags: FeatureFlags);
+    }
+
 }
