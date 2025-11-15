@@ -26,11 +26,8 @@ namespace DecoWeaver.Generated
             where TService : class
             where TImplementation : class, TService
         {
-            // Register the undecorated implementation as a keyed service with factory
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.ICache<string>), typeof(global::DecoWeaver.Sample.InMemoryCache<string>));
             services.AddKeyedSingleton<global::DecoWeaver.Sample.ICache<string>>(key, (sp, _) => (global::DecoWeaver.Sample.ICache<string>)implementationFactory(sp));
-
-            // Register factory that applies decorators
             services.AddSingleton<global::DecoWeaver.Sample.ICache<string>>(sp =>
             {
                 var current = (global::DecoWeaver.Sample.ICache<string>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.ICache<string>>(key)!;

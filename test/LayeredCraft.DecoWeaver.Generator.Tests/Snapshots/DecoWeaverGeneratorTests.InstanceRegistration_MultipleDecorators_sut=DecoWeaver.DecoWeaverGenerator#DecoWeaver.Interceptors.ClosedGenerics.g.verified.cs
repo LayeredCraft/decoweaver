@@ -25,12 +25,9 @@ namespace DecoWeaver.Generated
         internal static IServiceCollection AddSingleton_0<TService>(this IServiceCollection services, TService implementationInstance)
             where TService : class
         {
-            // Register the undecorated instance as a keyed service
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>), typeof(global::DecoWeaver.Sample.SqlRepository<global::DecoWeaver.Sample.Customer>));
             var capturedInstance = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>)(object)implementationInstance;
             services.AddKeyedSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(key, capturedInstance);
-
-            // Register factory that applies decorators around the instance
             services.AddSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(sp =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(key)!;

@@ -29,10 +29,9 @@ namespace DecoWeaver.Generated
             // Create nested key to avoid circular resolution
             var nestedKey = DecoratorKeys.ForKeyed(serviceKey, typeof(global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Event>), typeof(global::DecoWeaver.Sample.MemoryRepository<global::DecoWeaver.Sample.Event>));
 
-            // Register the undecorated implementation with nested key
+
             services.AddKeyedTransient<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Event>, global::DecoWeaver.Sample.MemoryRepository<global::DecoWeaver.Sample.Event>>(nestedKey);
 
-            // Register factory with user's key that applies decorators
             services.AddKeyedTransient<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Event>>(serviceKey, (sp, key) =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Event>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Event>>(nestedKey)!;
