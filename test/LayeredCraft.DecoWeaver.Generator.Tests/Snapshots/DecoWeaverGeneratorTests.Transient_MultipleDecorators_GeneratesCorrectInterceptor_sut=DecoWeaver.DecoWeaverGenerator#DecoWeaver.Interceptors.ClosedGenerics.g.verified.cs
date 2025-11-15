@@ -26,11 +26,8 @@ namespace DecoWeaver.Generated
             where TService : class
             where TImplementation : class, TService
         {
-            // Register the undecorated implementation as a keyed service
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>));
             services.AddKeyedTransient<global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>>(key);
-
-            // Register factory that applies decorators
             services.AddTransient<global::DecoWeaver.Sample.IRepository<global::Customer>>(sp =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::Customer>>(key)!;

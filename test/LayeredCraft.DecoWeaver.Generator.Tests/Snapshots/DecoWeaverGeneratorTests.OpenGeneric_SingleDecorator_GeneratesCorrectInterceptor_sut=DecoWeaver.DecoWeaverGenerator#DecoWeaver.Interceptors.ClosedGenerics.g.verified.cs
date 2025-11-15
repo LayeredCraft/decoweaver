@@ -26,11 +26,8 @@ namespace DecoWeaver.Generated
             where TService : class
             where TImplementation : class, TService
         {
-            // Register the undecorated implementation as a keyed service
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::Order>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<global::Order>));
             services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::Order>, global::DecoWeaver.Sample.DynamoDbRepository<global::Order>>(key);
-
-            // Register factory that applies decorators
             services.AddScoped<global::DecoWeaver.Sample.IRepository<global::Order>>(sp =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::Order>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::Order>>(key)!;
@@ -40,18 +37,14 @@ namespace DecoWeaver.Generated
             });
             return services;
         }
-
         [InterceptsLocation(version: 1, data: "jlpBEu7DiUNh219Vtmk6h4kBAABQcm9ncmFtLmNz")]
         /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddScoped&lt;global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>&gt;(IServiceCollection)</summary>
         internal static IServiceCollection AddScoped_1<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
         {
-            // Register the undecorated implementation as a keyed service
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IRepository<global::Customer>), typeof(global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>));
             services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::Customer>, global::DecoWeaver.Sample.DynamoDbRepository<global::Customer>>(key);
-
-            // Register factory that applies decorators
             services.AddScoped<global::DecoWeaver.Sample.IRepository<global::Customer>>(sp =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::Customer>>(key)!;

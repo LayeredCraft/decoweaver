@@ -191,6 +191,44 @@ This release adds support for singleton instance registrations, completing issue
 ]]>
     </PackageReleaseNotes>
 
+    <PackageReleaseNotes Condition="$(VersionPrefix.StartsWith('1.0.5-beta'))">
+      <![CDATA[
+## DecoWeaver 1.0.5-beta - Scriban Template Migration
+
+This release migrates code generation from StringBuilder to Scriban templates for improved maintainability and readability.
+
+### What's Changed
+
+* **Template-based code generation** - Migrated from StringBuilder to Scriban 6.5.0 template engine
+  - Unified template generates all interceptor code (8 registration kinds)
+  - Conditional logic handles variations (keyed, factory, instance, two-type-params)
+  - Template caching with `ConcurrentDictionary<string, Template>` for performance
+  - Strongly-typed `RegistrationModel` (readonly record struct) for zero-boxing overhead
+* **Code cleanup** - Removed 570+ lines of StringBuilder emission code
+  - Simplified `InterceptorEmitter.cs` from 440+ lines to ~70 lines
+  - Removed individual template files (Common/InterceptsLocationAttribute, DecoratorKeys, DecoratorFactory)
+  - Single unified template: `DecoWeaverInterceptors.scriban`
+* **Comment reduction** - Removed generic "Register X" comments, kept only valuable WHY comments:
+  - "Create nested key to avoid circular resolution" - explains nested key purpose
+  - "Compose decorators (innermost to outermost)" - explains decorator ordering
+
+### Technical Details
+
+* Added dependency: `Scriban 6.5.0` and `Microsoft.CSharp 4.7.0` (for Scriban's dynamic features)
+* Template resource format: `Templates.{FileName}.scriban` embedded in assembly
+* No functional changes - generated code is equivalent (except comment reduction)
+* All 49 tests passing with updated snapshots
+* Build performance unchanged - template compilation is one-time cost with caching
+
+### Documentation
+
+* Full documentation: https://layeredcraft.github.io/decoweaver/
+* Changelog: https://layeredcraft.github.io/decoweaver/changelog/
+* GitHub: https://github.com/layeredcraft/decoweaver
+
+]]>
+    </PackageReleaseNotes>
+
     <!-- Fallback for versions without specific release notes -->
     <PackageReleaseNotes Condition="'$(PackageReleaseNotes)' == ''">
       <![CDATA[

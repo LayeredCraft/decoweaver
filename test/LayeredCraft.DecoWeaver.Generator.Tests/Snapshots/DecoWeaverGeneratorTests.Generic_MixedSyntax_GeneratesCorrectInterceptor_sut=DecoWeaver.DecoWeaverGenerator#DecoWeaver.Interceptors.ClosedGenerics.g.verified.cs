@@ -26,11 +26,8 @@ namespace DecoWeaver.Generated
             where TService : class
             where TImplementation : class, TService
         {
-            // Register the undecorated implementation as a keyed service
             var key = DecoratorKeys.For(typeof(global::DecoWeaver.Sample.IUserService), typeof(global::DecoWeaver.Sample.UserService));
             services.AddKeyedScoped<global::DecoWeaver.Sample.IUserService, global::DecoWeaver.Sample.UserService>(key);
-
-            // Register factory that applies decorators
             services.AddScoped<global::DecoWeaver.Sample.IUserService>(sp =>
             {
                 var current = (global::DecoWeaver.Sample.IUserService)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IUserService>(key)!;

@@ -8,18 +8,6 @@ namespace DecoWeaver.Emit;
 /// </summary>
 internal static class TemplateConstants
 {
-    // Common templates
-    internal const string InterceptsLocationAttribute = "Templates.Common.InterceptsLocationAttribute.scriban";
-    internal const string DecoratorKeys = "Templates.Common.DecoratorKeys.scriban";
-    internal const string DecoratorFactory = "Templates.Common.DecoratorFactory.scriban";
-
-    // Registration kind templates
-    internal const string ParameterlessInterceptor = "Templates.ParameterlessInterceptor.scriban";
-    internal const string FactoryTwoTypeParamsInterceptor = "Templates.FactoryTwoTypeParamsInterceptor.scriban";
-    internal const string FactorySingleTypeParamInterceptor = "Templates.FactorySingleTypeParamInterceptor.scriban";
-    internal const string KeyedParameterlessInterceptor = "Templates.KeyedParameterlessInterceptor.scriban";
-    internal const string KeyedFactoryTwoTypeParamsInterceptor = "Templates.KeyedFactoryTwoTypeParamsInterceptor.scriban";
-    internal const string KeyedFactorySingleTypeParamInterceptor = "Templates.KeyedFactorySingleTypeParamInterceptor.scriban";
-    internal const string InstanceSingleTypeParamInterceptor = "Templates.InstanceSingleTypeParamInterceptor.scriban";
-    internal const string KeyedInstanceSingleTypeParamInterceptor = "Templates.KeyedInstanceSingleTypeParamInterceptor.scriban";
+    // Unified template - emits entire DecoWeaverInterceptors file
+    internal const string DecoWeaverInterceptors = "Templates.DecoWeaverInterceptors.scriban";
 }

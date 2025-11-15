@@ -29,10 +29,8 @@ namespace DecoWeaver.Generated
             var nestedKey = DecoratorKeys.ForKeyed(serviceKey, typeof(global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>), typeof(global::DecoWeaver.Sample.SqlRepository<global::DecoWeaver.Sample.Customer>));
             var capturedInstance = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>)(object)implementationInstance;
 
-            // Register the undecorated instance with nested key
             services.AddKeyedSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(nestedKey, capturedInstance);
 
-            // Register factory with user's key that applies decorators around the instance
             services.AddKeyedSingleton<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(serviceKey, (sp, key) =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.Customer>>(nestedKey)!;

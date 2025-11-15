@@ -29,10 +29,9 @@ namespace DecoWeaver.Generated
             // Create nested key to avoid circular resolution
             var nestedKey = DecoratorKeys.ForKeyed(serviceKey, typeof(global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>), typeof(global::DecoWeaver.Sample.SqlRepository<global::DecoWeaver.Sample.User>));
 
-            // Register the undecorated implementation with nested key
+
             services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>, global::DecoWeaver.Sample.SqlRepository<global::DecoWeaver.Sample.User>>(nestedKey);
 
-            // Register factory with user's key that applies decorators
             services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>>(serviceKey, (sp, key) =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>>(nestedKey)!;
@@ -42,7 +41,6 @@ namespace DecoWeaver.Generated
             });
             return services;
         }
-
         [InterceptsLocation(version: 1, data: "fAbqH9Sp6B/0qH0FYFTTaQYBAABQcm9ncmFtLmNz")]
         /// <summary>Intercepted: ServiceCollectionServiceExtensions.AddKeyedScoped&lt;global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>, global::DecoWeaver.Sample.CosmosRepository<global::DecoWeaver.Sample.User>&gt;(IServiceCollection, object?)</summary>
         internal static IServiceCollection AddKeyedScoped_1<TService, TImplementation>(this IServiceCollection services, object? serviceKey)
@@ -52,10 +50,9 @@ namespace DecoWeaver.Generated
             // Create nested key to avoid circular resolution
             var nestedKey = DecoratorKeys.ForKeyed(serviceKey, typeof(global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>), typeof(global::DecoWeaver.Sample.CosmosRepository<global::DecoWeaver.Sample.User>));
 
-            // Register the undecorated implementation with nested key
+
             services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>, global::DecoWeaver.Sample.CosmosRepository<global::DecoWeaver.Sample.User>>(nestedKey);
 
-            // Register factory with user's key that applies decorators
             services.AddKeyedScoped<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>>(serviceKey, (sp, key) =>
             {
                 var current = (global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>)sp.GetRequiredKeyedService<global::DecoWeaver.Sample.IRepository<global::DecoWeaver.Sample.User>>(nestedKey)!;

@@ -10,6 +10,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - No changes yet
 
+## [1.0.5-beta] - 2025-11-14
+
+### Changed
+- **Migrated code generation from StringBuilder to Scriban templates** for improved maintainability and readability
+  - Unified template generates all interceptor code for 8 registration kinds
+  - Conditional logic handles variations (keyed, factory, instance, two-type-params)
+  - Template caching with `ConcurrentDictionary<string, Template>` for performance
+  - Strongly-typed `RegistrationModel` (readonly record struct) for zero-boxing overhead
+- **Code cleanup** - Removed 570+ lines of StringBuilder emission code
+  - Simplified `InterceptorEmitter.cs` from 440+ lines to ~70 lines
+  - Removed individual template files (Common/InterceptsLocationAttribute, DecoratorKeys, DecoratorFactory)
+  - Single unified template: `DecoWeaverInterceptors.scriban`
+- **Comment reduction** - Removed generic "Register X" comments, kept only valuable WHY comments
+  - "Create nested key to avoid circular resolution" - explains nested key purpose
+  - "Compose decorators (innermost to outermost)" - explains decorator ordering
+
+### Added
+- Added dependency: `Scriban 6.5.0` and `Microsoft.CSharp 4.7.0` (for Scriban's dynamic features)
+- Template resource format: `Templates.{FileName}.scriban` embedded in assembly
+- `TemplateHelper.cs` with template loading and caching infrastructure
+- `DecoWeaverInterceptorsSources.cs` with strongly-typed model generation
+
+### Technical Details
+- Template compilation is one-time cost with caching - no performance impact
+- No functional changes - generated code is equivalent (except comment reduction)
+- All 49 tests passing with updated snapshots
+- Template uses Scriban's `{{-` syntax for whitespace control
+
 ## [1.0.4-beta] - 2025-11-13
 
 ### Added
