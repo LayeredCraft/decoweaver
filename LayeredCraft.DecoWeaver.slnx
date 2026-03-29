@@ -8,6 +8,7 @@
     <File Path="docs\usage\opt-out.md" />
   </Folder>
   <Folder Name="/docs/advanced/">
+    <File Path="docs/advanced/instance-registrations.md" />
     <File Path="docs\advanced\interceptors.md" />
     <File Path="docs\advanced\source-generators.md" />
     <File Path="docs\advanced\testing.md" />
@@ -56,7 +57,7 @@
     <File Path=".github\workflows\docs.yml" />
   </Folder>
   <Folder Name="/samples/">
-    <Project Path="samples\DecoWeaver.Sample\DecoWeaver.Sample.csproj" Type="C#" />
+    <Project Path="samples\DecoWeaver.Sample\DecoWeaver.Sample.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
@@ -64,10 +65,10 @@
     <File Path="releasenotes.props" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" Type="C#" />
+    <Project Path="src\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" />
     <Project Path="src\LayeredCraft.DecoWeaver.Generators\LayeredCraft.DecoWeaver.Generators.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test\LayeredCraft.DecoWeaver.Generator.Tests\LayeredCraft.DecoWeaver.Generator.Tests.csproj" Type="C#" />
+    <Project Path="test\LayeredCraft.DecoWeaver.Generator.Tests\LayeredCraft.DecoWeaver.Generator.Tests.csproj" />
   </Folder>
 </Solution>

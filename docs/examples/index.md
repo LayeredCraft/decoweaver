@@ -65,7 +65,7 @@ Here's a complete example showing multiple decorators working together:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 // Service interface
 public interface IOrderService

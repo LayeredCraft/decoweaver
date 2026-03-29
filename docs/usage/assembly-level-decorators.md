@@ -7,7 +7,7 @@ Assembly-level decorators provide a centralized way to apply decorators to multi
 Use the `[assembly: DecorateService(...)]` attribute in any `.cs` file (commonly in `GlobalUsings.cs` or `AssemblyInfo.cs`):
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [assembly: DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
 ```
@@ -358,7 +358,7 @@ Keep all assembly-level decorators in one file:
 
 ```csharp
 // GlobalUsings.cs or AssemblyDecorators.cs
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 // Repositories
 [assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>), Order = 10)]

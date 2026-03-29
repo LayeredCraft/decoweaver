@@ -377,7 +377,7 @@ public async Task GeneratesInterceptorForDecoratedType()
 {
     // Arrange
     var source = @"
-        using DecoWeaver.Attributes;
+        using LayeredCraft.DecoWeaver.Attributes;
 
         [DecoratedBy<LoggingRepository>]
         public class UserRepository : IUserRepository { }

@@ -12,7 +12,7 @@ The `[DecoratedBy]` attribute is the primary way to apply decorators in DecoWeav
 The most common and type-safe approach:
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingDecorator>]
 public class UserRepository : IUserRepository
@@ -26,7 +26,7 @@ public class UserRepository : IUserRepository
 Alternative syntax using `typeof()`:
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy(typeof(LoggingDecorator))]
 public class UserRepository : IUserRepository

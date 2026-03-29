@@ -5,7 +5,7 @@ Get started with DecoWeaver in 5 minutes by creating a simple logging decorator.
 ## Step 1: Install DecoWeaver
 
 ```bash
-dotnet add package DecoWeaver --prerelease
+dotnet add package LayeredCraft.DecoWeaver --prerelease
 ```
 
 ## Step 2: Create Your Service
@@ -71,7 +71,7 @@ public class LoggingUserService : IUserService
 Add the `[DecoratedBy]` attribute to your implementation:
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingUserService>]
 public class UserService : IUserService
@@ -115,7 +115,7 @@ await userService.GetByIdAsync(123);
 
 To see the generated interceptor code:
 
-**Visual Studio**: Solution Explorer → Show All Files → obj/Debug/net8.0/generated/DecoWeaver/
+**Visual Studio**: Solution Explorer → Show All Files → obj/Debug/net8.0/generated/LayeredCraft.DecoWeaver.Generators/
 
 **Rider**: Solution Explorer → Generated Files node
 
@@ -125,7 +125,7 @@ Instead of applying decorators to each class individually, you can apply them to
 
 ```csharp
 // In GlobalUsings.cs or any .cs file
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [assembly: DecorateService(typeof(IUserService), typeof(LoggingUserService))]
 

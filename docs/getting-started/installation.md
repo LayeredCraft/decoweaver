@@ -5,29 +5,32 @@
 Install DecoWeaver via the .NET CLI:
 
 ```bash
-dotnet add package DecoWeaver --prerelease
+dotnet add package LayeredCraft.DecoWeaver --prerelease
 ```
 
 Or via Package Manager Console in Visual Studio:
 
 ```powershell
-Install-Package DecoWeaver -Prerelease
+Install-Package LayeredCraft.DecoWeaver -Prerelease
 ```
 
 Or add directly to your `.csproj` file:
 
 ```xml
-<PackageReference Include="DecoWeaver" Version="1.0.0-beta.*" />
+<PackageReference Include="LayeredCraft.DecoWeaver" Version="1.0.0-beta.*" />
 ```
 
 Note: The full version includes a build number suffix added by the build system (e.g., `1.0.0-beta.123`).
+
+!!! warning "Migrating from `DecoWeaver`?"
+    The `DecoWeaver` NuGet package has been deprecated. Replace it with `LayeredCraft.DecoWeaver` and update all `using DecoWeaver.Attributes;` statements to `using LayeredCraft.DecoWeaver.Attributes;`.
 
 ## Package Contents
 
 The DecoWeaver NuGet package includes:
 
-- **DecoWeaver.Attributes.dll** - Runtime attributes (zero footprint with `[Conditional]`)
-- **DecoWeaver.dll** - Source generator (build-time only)
+- **LayeredCraft.DecoWeaver.Attributes.dll** - Runtime attributes (zero footprint with `[Conditional]`)
+- **LayeredCraft.DecoWeaver.Generators.dll** - Source generator (build-time only)
 
 ## Verify Installation
 
@@ -35,7 +38,7 @@ After installation, verify the generator is working:
 
 1. Add a simple decorator attribute to a class
 2. Build your project
-3. Check for generated files in `obj/Debug/{targetFramework}/generated/DecoWeaver/`
+3. Check for generated files in `obj/Debug/{targetFramework}/generated/LayeredCraft.DecoWeaver.Generators/`
 
 ## IDE Support
 

@@ -2,7 +2,7 @@
 
 **Compile-time decorator registration for .NET dependency injection**
 
-[![NuGet](https://img.shields.io/nuget/v/DecoWeaver.svg)](https://www.nuget.org/packages/DecoWeaver/)
+[![NuGet](https://img.shields.io/nuget/v/LayeredCraft.DecoWeaver.svg)](https://www.nuget.org/packages/LayeredCraft.DecoWeaver/)
 [![Build Status](https://github.com/LayeredCraft/decoweaver/actions/workflows/build.yaml/badge.svg)](https://github.com/LayeredCraft/decoweaver/actions/workflows/build.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://layeredcraft.github.io/decoweaver/)
@@ -21,12 +21,14 @@ DecoWeaver is a .NET incremental source generator that brings **compile-time dec
 
 📚 **[View Full Documentation](https://layeredcraft.github.io/decoweaver/)**
 
+> **Migrating from `DecoWeaver`?** The `DecoWeaver` NuGet package has been deprecated in favor of `LayeredCraft.DecoWeaver`. Update your package reference and replace `using DecoWeaver.Attributes;` with `using LayeredCraft.DecoWeaver.Attributes;` in your code.
+
 ## Installation
 
 Install the NuGet package:
 
 ```bash
-dotnet add package DecoWeaver --prerelease
+dotnet add package LayeredCraft.DecoWeaver --prerelease
 ```
 
 Ensure your project uses C# 11 or later:
@@ -43,7 +45,7 @@ Ensure your project uses C# 11 or later:
 ### 1. Mark your implementation with the decorator to apply
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingRepository>]
 public class UserRepository : IUserRepository
