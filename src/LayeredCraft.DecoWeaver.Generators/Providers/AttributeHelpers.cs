@@ -1,6 +1,6 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
-namespace DecoWeaver.Providers;
+namespace LayeredCraft.DecoWeaver.Providers;
 
 /// <summary>
 /// Shared helper methods for reading attribute arguments across all providers.

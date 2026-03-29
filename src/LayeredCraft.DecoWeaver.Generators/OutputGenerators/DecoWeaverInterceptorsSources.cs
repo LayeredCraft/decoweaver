@@ -1,9 +1,9 @@
-// DecoWeaver/OutputGenerators/DecoWeaverInterceptorsSources.cs
+﻿// DecoWeaver/OutputGenerators/DecoWeaverInterceptorsSources.cs
 
-using DecoWeaver.Emit;
-using DecoWeaver.Providers;
+using LayeredCraft.DecoWeaver.Emit;
+using LayeredCraft.DecoWeaver.Providers;
 
-namespace DecoWeaver.OutputGenerators;
+namespace LayeredCraft.DecoWeaver.OutputGenerators;
 
 /// <summary>
 /// Generates the complete DecoWeaverInterceptors source file using the unified Scriban template.

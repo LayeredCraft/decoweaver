@@ -9,7 +9,7 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace DecoWeaver.Generated
+namespace LayeredCraft.DecoWeaver.Generated
 {
     using System;
     using System.Collections.Generic;

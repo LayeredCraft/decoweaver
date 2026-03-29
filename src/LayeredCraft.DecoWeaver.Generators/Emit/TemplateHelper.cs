@@ -1,10 +1,10 @@
-// DecoWeaver/Emit/TemplateHelper.cs
+﻿// DecoWeaver/Emit/TemplateHelper.cs
 
 using System.Collections.Concurrent;
 using System.Reflection;
 using Scriban;
 
-namespace DecoWeaver.Emit;
+namespace LayeredCraft.DecoWeaver.Emit;
 
 /// <summary>
 /// Helper class for loading, caching, and rendering Scriban templates from embedded resources.

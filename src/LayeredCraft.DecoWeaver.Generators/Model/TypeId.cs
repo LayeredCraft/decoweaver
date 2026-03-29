@@ -1,6 +1,6 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
-namespace DecoWeaver.Model;
+namespace LayeredCraft.DecoWeaver.Model;
 
 /// <summary>
 /// A (possibly generic) type: definition + zero or more type arguments.
@@ -24,7 +24,7 @@ internal static class TypeIdExtensions
                 // Normalize: for constructed generics keep args; for unbound keep definition.
                 case INamedTypeSymbol nt:
                 {
-                    var def = nt.ConstructedFrom; // canonical definition (…`N)
+                    var def = nt.ConstructedFrom; // canonical definition (â€¦`N)
                     var defId = TypeDefId.Create(def);
 
                     // Open generic via typeof(Foo<>) or IsUnboundGenericType:

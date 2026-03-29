@@ -1,4 +1,4 @@
-using DecoWeaver.Attributes;
+﻿using LayeredCraft.DecoWeaver.Attributes;
 
 public interface IRepository<T>
 {

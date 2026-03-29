@@ -1,7 +1,7 @@
-using DecoWeaver.Util;
+﻿using LayeredCraft.DecoWeaver.Util;
 using Microsoft.CodeAnalysis;
 
-namespace DecoWeaver.Model;
+namespace LayeredCraft.DecoWeaver.Model;
 
 /// <summary>
 /// Identity of a type definition (no type arguments).

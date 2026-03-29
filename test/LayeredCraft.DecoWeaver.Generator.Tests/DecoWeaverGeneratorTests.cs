@@ -1,4 +1,4 @@
-using DecoWeaver;
+﻿using LayeredCraft.DecoWeaver;
 using LayeredCraft.DecoWeaver.Generator.Tests.TestKit.Attributes;
 
 namespace LayeredCraft.DecoWeaver.Generator.Tests;
@@ -7,8 +7,8 @@ public class DecoWeaverGeneratorTests
 {
     private static readonly Dictionary<string, string>? FeatureFlags = new()
     {
-        ["InterceptorsPreviewNamespaces"] = "DecoWeaver.Generated",
-        ["InterceptorsNamespaces"] = "DecoWeaver.Generated",
+        ["InterceptorsPreviewNamespaces"] = "LayeredCraft.DecoWeaver.Generated",
+        ["InterceptorsNamespaces"] = "LayeredCraft.DecoWeaver.Generated",
     };
 
     [Theory]

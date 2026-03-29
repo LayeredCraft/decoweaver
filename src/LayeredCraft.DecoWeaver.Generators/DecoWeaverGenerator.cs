@@ -1,12 +1,12 @@
-using System.Collections.Immutable;
-using DecoWeaver.Emit;
-using DecoWeaver.Model;
-using DecoWeaver.Providers;
-using DecoWeaver.Util;
+﻿using System.Collections.Immutable;
+using LayeredCraft.DecoWeaver.Emit;
+using LayeredCraft.DecoWeaver.Model;
+using LayeredCraft.DecoWeaver.Providers;
+using LayeredCraft.DecoWeaver.Util;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace DecoWeaver;
+namespace LayeredCraft.DecoWeaver;
 
 [Generator]
 public sealed class DecoWeaverGenerator : IIncrementalGenerator
@@ -109,7 +109,7 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
             .Select(static (x, _) => x!.Value)
             .WithTrackingName(TrackingNames.Attr_DoNotDecorate_Stream);
 
-        // ✅ Gate each VALUES stream before Collect()
+        // âœ… Gate each VALUES stream before Collect()
         var genericGated = genericDecorations
             .Combine(csharpSufficient)
             .Where(static pair => pair.Right)
@@ -202,7 +202,7 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
                 // Build a fast lookup of implementations that opted out via [SkipAssemblyDecorators]
                 var skipped = new HashSet<TypeDefId>(inputs.SkipMarkers.Select(m => m.ImplementationDef));
 
-                // Convert ServiceDecoration → DecoratorToIntercept by matching service types with registrations
+                // Convert ServiceDecoration â†’ DecoratorToIntercept by matching service types with registrations
                 var assemblyDecos = new List<DecoratorToIntercept>();
                 foreach (var matchingDecos in inputs.Registrations.Select(reg => inputs.ServiceDecos
                              .Where(sd =>
@@ -233,7 +233,7 @@ public sealed class DecoWeaverGenerator : IIncrementalGenerator
                     registrations: regsWithDecorators,
                     decoratorsByImplementation: byImpl);
 
-                spc.AddSource("DecoWeaver.Interceptors.ClosedGenerics.g.cs", source);
+                spc.AddSource("LayeredCraft.DecoWeaver.Interceptors.ClosedGenerics.g.cs", source);
             });
     }
 

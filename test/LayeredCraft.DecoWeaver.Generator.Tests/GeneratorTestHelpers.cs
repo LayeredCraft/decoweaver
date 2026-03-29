@@ -1,6 +1,6 @@
-using System.Collections.Immutable;
-using DecoWeaver;
-using DecoWeaver.Attributes;
+﻿using System.Collections.Immutable;
+using LayeredCraft.DecoWeaver;
+using LayeredCraft.DecoWeaver.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -93,7 +93,7 @@ internal sealed class GeneratorTestHelpers
             );
         }
 
-        // ✅ Wire the analyzer config options provider (this is what you were after)
+        // âœ… Wire the analyzer config options provider (this is what you were after)
         AnalyzerConfigOptionsProvider? optionsProvider = null;
         if (msbuildProperties is { Count: > 0 })
         {

@@ -5,17 +5,17 @@
         <IsPackable>false</IsPackable>
         <LangVersion>default</LangVersion>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>DecoWeaver.Attributes</PackageId>
+        <PackageId>LayeredCraft.DecoWeaver.Attributes</PackageId>
         <AssemblyName>$(PackageId)</AssemblyName>
         <RootNamespace>$(PackageId)</RootNamespace>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Polyfill" Version="9.17.0">
+        <PackageReference Include="Polyfill" Version="9.23.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103">
+        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.201">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
