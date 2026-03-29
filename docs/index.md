@@ -1,8 +1,8 @@
 # DecoWeaver
 
 [![Build Status](https://github.com/layeredcraft/decoweaver/actions/workflows/build.yaml/badge.svg)](https://github.com/layeredcraft/decoweaver/actions/workflows/build.yaml)
-[![NuGet](https://img.shields.io/nuget/v/DecoWeaver.svg)](https://www.nuget.org/packages/DecoWeaver/)
-[![Downloads](https://img.shields.io/nuget/dt/DecoWeaver.svg)](https://www.nuget.org/packages/DecoWeaver/)
+[![NuGet](https://img.shields.io/nuget/v/LayeredCraft.DecoWeaver.svg)](https://www.nuget.org/packages/LayeredCraft.DecoWeaver/)
+[![Downloads](https://img.shields.io/nuget/dt/LayeredCraft.DecoWeaver.svg)](https://www.nuget.org/packages/LayeredCraft.DecoWeaver/)
 
 **DecoWeaver** is a compile-time decorator registration library for .NET dependency injection. It uses C# 11+ interceptors to automatically apply the decorator pattern at build time, eliminating runtime reflection and assembly scanning.
 
@@ -19,10 +19,13 @@
 - **🔗 Order Control**: Explicit decorator ordering via `Order` property
 - **✨ Clean Generated Code**: Readable, debuggable interceptor code
 
+!!! warning "Migrating from `DecoWeaver`?"
+    The `DecoWeaver` NuGet package has been deprecated in favor of `LayeredCraft.DecoWeaver`. Update your package reference and replace `using DecoWeaver.Attributes;` with `using LayeredCraft.DecoWeaver.Attributes;` in your code.
+
 ## Installation
 
 ```bash
-dotnet add package DecoWeaver --prerelease
+dotnet add package LayeredCraft.DecoWeaver --prerelease
 ```
 
 ## Quick Start
@@ -73,7 +76,7 @@ public class LoggingUserRepository : IUserRepository
 ### 3. Apply the Decorator Attribute
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingUserRepository>]
 public class UserRepository : IUserRepository

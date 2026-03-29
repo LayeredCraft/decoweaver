@@ -42,7 +42,7 @@ public class UserRepository : IUserRepository { }
 #### Basic Usage
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy<LoggingRepository>]
 public class UserRepository : IUserRepository
@@ -155,7 +155,7 @@ Controls the order in which multiple decorators are applied. Lower values are ap
 #### Basic Usage
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 [DecoratedBy(typeof(LoggingRepository))]
 public class UserRepository : IUserRepository
@@ -333,7 +333,7 @@ Controls the order when multiple assembly-level decorators are applied. Lower va
 #### Basic Usage
 
 ```csharp
-using DecoWeaver.Attributes;
+using LayeredCraft.DecoWeaver.Attributes;
 
 // Apply logging to all IRepository<T> implementations
 [assembly: DecorateService(typeof(IRepository<>), typeof(LoggingRepository<>))]
