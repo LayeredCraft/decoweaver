@@ -1,8 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-namespace DecoWeaver.Util;
+namespace LayeredCraft.DecoWeaver.Util;
 
 // Value-based equality wrapper for incremental caching & dictionary keys
 [CollectionBuilder(typeof(EquatableArrayBuilder), nameof(EquatableArrayBuilder.Create))]

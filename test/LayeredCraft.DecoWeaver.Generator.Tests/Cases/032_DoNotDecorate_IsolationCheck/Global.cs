@@ -1,3 +1,3 @@
-using DecoWeaver.Sample;
+﻿using DecoWeaver.Sample;
 
-[assembly: DecoWeaver.Attributes.DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]
+[assembly: LayeredCraft.DecoWeaver.Attributes.DecorateService(typeof(IRepository<>), typeof(CachingRepository<>))]

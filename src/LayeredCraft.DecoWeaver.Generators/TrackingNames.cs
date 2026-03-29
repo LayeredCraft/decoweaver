@@ -1,4 +1,4 @@
-namespace DecoWeaver;
+﻿namespace LayeredCraft.DecoWeaver;
 
 public static class TrackingNames
 {

@@ -1,12 +1,12 @@
-// DecoWeaver/Emit/InterceptorEmitter.cs
+﻿// DecoWeaver/Emit/InterceptorEmitter.cs
 
-using DecoWeaver.Model;
-using DecoWeaver.OutputGenerators;
-using DecoWeaver.Providers;
-using DecoWeaver.Util;
+using LayeredCraft.DecoWeaver.Model;
+using LayeredCraft.DecoWeaver.OutputGenerators;
+using LayeredCraft.DecoWeaver.Providers;
+using LayeredCraft.DecoWeaver.Util;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace DecoWeaver.Emit;
+namespace LayeredCraft.DecoWeaver.Emit;
 
 /// <summary>Emits the interceptor source for DecoWeaver's open-generic decoration rewrite.</summary>
 internal static class InterceptorEmitter

@@ -1,4 +1,4 @@
-namespace DecoWeaver.Sample;
+﻿namespace DecoWeaver.Sample;
 
 public interface IRepository<T>
 {
@@ -10,7 +10,7 @@ public class Customer { public int Id { get; set; } }
 
 // SqlRepository: Uses open generic in DoNotDecorate to match all closed variants
 // DoNotDecorate(typeof(CachingRepository<>)) should exclude CachingRepository<Customer>
-[DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
+[LayeredCraft.DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
 public class SqlRepository<T> : IRepository<T>
 {
     public T Get(string id) => throw new NotImplementedException();

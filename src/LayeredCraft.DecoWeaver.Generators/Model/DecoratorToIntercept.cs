@@ -1,4 +1,4 @@
-namespace DecoWeaver.Model;
+﻿namespace LayeredCraft.DecoWeaver.Model;
 
 /// <summary>
 /// One decoration declared on an implementation type definition (works great for open generics).

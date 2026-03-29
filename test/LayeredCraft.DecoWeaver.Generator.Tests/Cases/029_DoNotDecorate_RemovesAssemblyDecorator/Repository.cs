@@ -1,4 +1,4 @@
-namespace DecoWeaver.Sample;
+﻿namespace DecoWeaver.Sample;
 
 public interface IRepository<T>
 {
@@ -17,7 +17,7 @@ public class DynamoDbRepository<T> : IRepository<T>
 }
 
 // SqlRepository: Should NOT be decorated (DoNotDecorate applied)
-[DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
+[LayeredCraft.DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
 public class SqlRepository<T> : IRepository<T>
 {
     public T Get(string id) => throw new NotImplementedException();

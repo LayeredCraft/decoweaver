@@ -1,6 +1,6 @@
-// DecoWeaver/Emit/TemplateConstants.cs
+﻿// DecoWeaver/Emit/TemplateConstants.cs
 
-namespace DecoWeaver.Emit;
+namespace LayeredCraft.DecoWeaver.Emit;
 
 /// <summary>
 /// Constants for Scriban template resource paths.

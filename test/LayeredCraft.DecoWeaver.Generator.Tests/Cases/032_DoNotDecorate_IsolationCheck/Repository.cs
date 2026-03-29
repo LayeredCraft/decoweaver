@@ -1,4 +1,4 @@
-namespace DecoWeaver.Sample;
+﻿namespace DecoWeaver.Sample;
 
 public interface IRepository<T>
 {
@@ -10,7 +10,7 @@ public class Customer { public int Id { get; set; } }
 public class Order { public int Id { get; set; } }
 
 // SqlRepository: Opts out of assembly-level Caching
-[DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
+[LayeredCraft.DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
 public class SqlRepository<T> : IRepository<T>
 {
     public T Get(string id) => throw new NotImplementedException();

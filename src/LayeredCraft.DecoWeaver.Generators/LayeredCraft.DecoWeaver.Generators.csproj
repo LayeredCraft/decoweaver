@@ -6,7 +6,7 @@
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <IsPackable>true</IsPackable>
         <ImplicitUsings>true</ImplicitUsings>
-        <PackageId>DecoWeaver</PackageId>
+        <PackageId>LayeredCraft.DecoWeaver</PackageId>
         <AssemblyName>$(PackageId)</AssemblyName>
         <RootNamespace>$(PackageId)</RootNamespace>
         <Title>$(PackageId)</Title>
@@ -18,16 +18,16 @@
     
     <ItemGroup>
         <!-- Keep Roslyn deps private so they don't leak to consumers -->
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" PrivateAssets="all" />
-        <PackageReference Include="Polyfill" Version="9.17.0">
+        <PackageReference Include="Polyfill" Version="9.23.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Scriban" Version="6.5.5" IncludeAssets="build" PrivateAssets="all" />
+        <PackageReference Include="Scriban" Version="7.0.5" IncludeAssets="build" PrivateAssets="all" />
         <ProjectReference Include="..\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" PrivateAssets="All" />
-        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103">
+        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.201">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -47,13 +47,22 @@
     <!-- Pack this generator DLL as an analyzer so consumers pick it up automatically -->
     <ItemGroup>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="..\LayeredCraft.DecoWeaver.Attributes\bin\$(Configuration)\netstandard2.0\DecoWeaver.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="true" />
-        <None Include="..\LayeredCraft.DecoWeaver.Attributes\bin\$(Configuration)\netstandard2.0\DecoWeaver.Attributes.xml" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
-        <None Include="DecoWeaver.props" Pack="true" PackagePath="build" />
-        <None Include="DecoWeaver.targets" Pack="true" PackagePath="build" />
+        <None Include="..\LayeredCraft.DecoWeaver.Attributes\bin\$(Configuration)\netstandard2.0\LayeredCraft.DecoWeaver.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="true" />
+        <None Include="..\LayeredCraft.DecoWeaver.Attributes\bin\$(Configuration)\netstandard2.0\LayeredCraft.DecoWeaver.Attributes.xml" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
+        <None Include="LayeredCraft.DecoWeaver.props" Pack="true" PackagePath="build" />
+        <None Include="LayeredCraft.DecoWeaver.targets" Pack="true" PackagePath="build" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="Roslyn\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- Scriban 7 source include already provides these AOT/trimming attributes.
+             Remove Polyfill's copies to avoid duplicate type definitions. -->
+        <Compile Remove="$(NuGetPackageRoot)polyfill\9.23.0\contentFiles\cs\netstandard2.0\Trimming\DynamicallyAccessedMembersAttribute.cs" />
+        <Compile Remove="$(NuGetPackageRoot)polyfill\9.23.0\contentFiles\cs\netstandard2.0\Trimming\DynamicallyAccessedMemberTypes.cs" />
+        <Compile Remove="$(NuGetPackageRoot)polyfill\9.23.0\contentFiles\cs\netstandard2.0\Trimming\RequiresDynamicCodeAttribute.cs" />
+        <Compile Remove="$(NuGetPackageRoot)polyfill\9.23.0\contentFiles\cs\netstandard2.0\Trimming\RequiresUnreferencedCodeAttribute.cs" />
+        <Compile Remove="$(NuGetPackageRoot)polyfill\9.23.0\contentFiles\cs\netstandard2.0\Trimming\UnconditionalSuppressMessageAttribute.cs" />
+    </ItemGroup>
 </Project>

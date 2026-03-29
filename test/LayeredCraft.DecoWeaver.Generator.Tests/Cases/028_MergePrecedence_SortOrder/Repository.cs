@@ -1,4 +1,4 @@
-namespace DecoWeaver.Sample;
+﻿namespace DecoWeaver.Sample;
 
 public interface IRepository<T>
 {
@@ -37,7 +37,7 @@ public class ValidationRepository<T> : IRepository<T>
 // Assembly declares: Logging@10
 // Class declares: Validation@10 (same order as assembly-level Logging)
 // Expected sort order: Validation@10 (Class, Source=0), then Logging@10 (Assembly, Source=1)
-[DecoWeaver.Attributes.DecoratedBy(typeof(ValidationRepository<>), Order = 10)]
+[LayeredCraft.DecoWeaver.Attributes.DecoratedBy(typeof(ValidationRepository<>), Order = 10)]
 public class UserRepository : IRepository<User>
 {
     public User Get(string id) => throw new NotImplementedException();

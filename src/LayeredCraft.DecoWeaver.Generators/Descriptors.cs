@@ -1,6 +1,6 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
-namespace DecoWeaver;
+namespace LayeredCraft.DecoWeaver;
 
 internal static class Descriptors
 {

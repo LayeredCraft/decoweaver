@@ -1,6 +1,6 @@
-using System.Collections.Immutable;
-using DecoWeaver;
-using DecoWeaver.Attributes;
+﻿using System.Collections.Immutable;
+using LayeredCraft.DecoWeaver;
+using LayeredCraft.DecoWeaver.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -38,14 +38,14 @@ internal sealed class GeneratorTestHelpers
         var globalUsingsPath = ResolveCasePath(GlobalUsingsRelPath);
         if (File.Exists(globalUsingsPath))
         {
-            var guText = File.ReadAllText(globalUsingsPath);
+            var guText = NormalizeLineEndings(File.ReadAllText(globalUsingsPath));
             trees.Add(CSharpSyntaxTree.ParseText(guText, parse, path: NormalizeForDiagnostics(globalUsingsPath)));
         }
 
         // Then include the case files passed in
         trees.AddRange(caseRelativePaths
             .Select(ResolveCasePath)
-            .Select(p => CSharpSyntaxTree.ParseText(File.ReadAllText(p), parse, path: NormalizeForDiagnostics(p))));
+            .Select(p => CSharpSyntaxTree.ParseText(NormalizeLineEndings(File.ReadAllText(p)), parse, path: NormalizeForDiagnostics(p))));
 
         var references = GetBclReferences().ToList();
         references.AddRange([
@@ -93,7 +93,7 @@ internal sealed class GeneratorTestHelpers
             );
         }
 
-        // ✅ Wire the analyzer config options provider (this is what you were after)
+        // âœ… Wire the analyzer config options provider (this is what you were after)
         AnalyzerConfigOptionsProvider? optionsProvider = null;
         if (msbuildProperties is { Count: > 0 })
         {
@@ -143,6 +143,10 @@ internal sealed class GeneratorTestHelpers
 
     private static string NormalizeForDiagnostics(string path) =>
         path.Replace(Path.DirectorySeparatorChar, '/');
+
+    /// <summary>Normalizes CRLF to LF so Roslyn's GetInterceptableLocation() hash is platform-independent.</summary>
+    private static string NormalizeLineEndings(string text) =>
+        text.Replace("\r\n", "\n");
 }
 
 /// <summary>

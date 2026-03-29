@@ -1,4 +1,4 @@
-namespace DecoWeaver.Sample;
+﻿namespace DecoWeaver.Sample;
 
 public interface IRepository<T>
 {
@@ -28,7 +28,7 @@ public class LoggingRepository<T> : IRepository<T>
 
 // UserRepository: Assembly declares Caching@10, class declares Caching@20
 // Expected: Deduplication - class-level wins, so only one CachingRepository at order 20
-[DecoWeaver.Attributes.DecoratedBy(typeof(CachingRepository<>), Order = 20)]
+[LayeredCraft.DecoWeaver.Attributes.DecoratedBy(typeof(CachingRepository<>), Order = 20)]
 public class UserRepository : IRepository<User>
 {
     public User Get(string id) => throw new NotImplementedException();
@@ -37,7 +37,7 @@ public class UserRepository : IRepository<User>
 
 // ProductRepository: Assembly declares Logging@5, class declares Logging@15
 // Expected: Deduplication - class-level wins, so only one LoggingRepository at order 15
-[DecoWeaver.Attributes.DecoratedBy(typeof(LoggingRepository<>), Order = 15)]
+[LayeredCraft.DecoWeaver.Attributes.DecoratedBy(typeof(LoggingRepository<>), Order = 15)]
 public class ProductRepository : IRepository<Product>
 {
     public Product Get(string id) => throw new NotImplementedException();

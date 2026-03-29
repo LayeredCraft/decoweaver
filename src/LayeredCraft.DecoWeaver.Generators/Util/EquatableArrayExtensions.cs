@@ -1,6 +1,6 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
-namespace DecoWeaver.Util;
+namespace LayeredCraft.DecoWeaver.Util;
 
 internal static class EquatableArrayExtensions
 {

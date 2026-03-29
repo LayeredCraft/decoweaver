@@ -1,13 +1,13 @@
-namespace DecoWeaver;
+﻿namespace LayeredCraft.DecoWeaver;
 
 internal static class AttributeNames
 {
     // Full names with namespace (for ToDisplayString() comparisons)
-    public const string DecoratedByAttribute = $"DecoWeaver.Attributes.{DecoratedByMetadataName}";
-    public const string GenericDecoratedByAttribute = $"DecoWeaver.Attributes.{GenericDecoratedByMetadataName}";
-    public const string ServiceDecoratedByAttribute = $"DecoWeaver.Attributes.{ServiceDecoratedByMetadataName}";
-    public const string SkipAssemblyDecorationAttribute = $"DecoWeaver.Attributes.{SkipAssemblyDecorationMetadataName}";
-    public const string DoNotDecorateAttribute = $"DecoWeaver.Attributes.{DoNotDecorateMetadataName}";
+    public const string DecoratedByAttribute = $"LayeredCraft.DecoWeaver.Attributes.{DecoratedByMetadataName}";
+    public const string GenericDecoratedByAttribute = $"LayeredCraft.DecoWeaver.Attributes.{GenericDecoratedByMetadataName}";
+    public const string ServiceDecoratedByAttribute = $"LayeredCraft.DecoWeaver.Attributes.{ServiceDecoratedByMetadataName}";
+    public const string SkipAssemblyDecorationAttribute = $"LayeredCraft.DecoWeaver.Attributes.{SkipAssemblyDecorationMetadataName}";
+    public const string DoNotDecorateAttribute = $"LayeredCraft.DecoWeaver.Attributes.{DoNotDecorateMetadataName}";
 
     // Metadata names only (for pattern matching)
     public const string DecoratedByMetadataName = "DecoratedByAttribute";

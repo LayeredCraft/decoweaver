@@ -1,4 +1,4 @@
-namespace DecoWeaver.Sample;
+﻿namespace DecoWeaver.Sample;
 
 public interface IRepository<T>
 {
@@ -9,8 +9,8 @@ public interface IRepository<T>
 public class Order { public int Id { get; set; } }
 
 // SqlRepository: Opts out of Caching and Validation, keeps only Logging
-[DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
-[DecoWeaver.Attributes.DoNotDecorate(typeof(ValidationRepository<>))]
+[LayeredCraft.DecoWeaver.Attributes.DoNotDecorate(typeof(CachingRepository<>))]
+[LayeredCraft.DecoWeaver.Attributes.DoNotDecorate(typeof(ValidationRepository<>))]
 public class SqlRepository<T> : IRepository<T>
 {
     public T Get(string id) => throw new NotImplementedException();

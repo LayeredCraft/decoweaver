@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace DecoWeaver.Attributes;
+namespace LayeredCraft.DecoWeaver.Attributes;
 
 /// <summary>
 /// Declares that <typeparamref name="TDecorator"/> should wrap the decorated implementation

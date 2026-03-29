@@ -1,4 +1,9 @@
 *.verified.txt text eol=lf working-tree-encoding=UTF-8
 *.verified.xml text eol=lf working-tree-encoding=UTF-8
 *.verified.json text eol=lf working-tree-encoding=UTF-8
+*.verified.cs text eol=lf working-tree-encoding=UTF-8
 *.verified.bin binary
+
+# Force LF for test case source files so Roslyn's GetInterceptableLocation()
+# produces the same data hash on all platforms (CRLF vs LF changes the hash)
+test/LayeredCraft.DecoWeaver.Generator.Tests/Cases/**/*.cs text eol=lf

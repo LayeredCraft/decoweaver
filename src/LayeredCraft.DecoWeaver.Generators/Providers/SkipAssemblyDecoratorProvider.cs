@@ -1,8 +1,8 @@
-using DecoWeaver.Model;
+﻿using LayeredCraft.DecoWeaver.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace DecoWeaver.Providers;
+namespace LayeredCraft.DecoWeaver.Providers;
 
 internal static class SkipAssemblyDecoratorProvider
 {
