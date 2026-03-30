@@ -3,7 +3,7 @@
     <Import Project="releasenotes.props" />
 
     <PropertyGroup>
-        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionPrefix>1.0.1</VersionPrefix>
         <!-- SPDX license identifier for MIT -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
