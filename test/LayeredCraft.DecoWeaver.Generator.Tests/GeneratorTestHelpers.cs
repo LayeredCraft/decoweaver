@@ -122,7 +122,9 @@ internal sealed class GeneratorTestHelpers
     /// </summary>
     private static IEnumerable<MetadataReference> GetBclReferences()
     {
-#if NET8_0
+#if NET11_0_OR_GREATER
+        return Basic.Reference.Assemblies.Net110.References.All;
+#elif NET8_0
         return Basic.Reference.Assemblies.Net80.References.All;
 #elif NET9_0
         return Basic.Reference.Assemblies.Net90.References.All;
