@@ -27,7 +27,7 @@
         </PackageReference>
         <PackageReference Include="Scriban" Version="7.2.6" IncludeAssets="build" PrivateAssets="all" />
         <ProjectReference Include="..\LayeredCraft.DecoWeaver.Attributes\LayeredCraft.DecoWeaver.Attributes.csproj" PrivateAssets="All" />
-        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.301">
+        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.400">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
